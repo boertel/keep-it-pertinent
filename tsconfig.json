@@ -2,6 +2,14 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
+    "baseUrl": ".",
+    "paths": {
+      "@/cache": ["cache"],
+      "@/components": ["components"],
+      "@/config": ["config"],
+      "@/redis": ["redis"],
+      "@/twitter": ["twitter"]
+    },
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,

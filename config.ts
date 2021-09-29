@@ -1,0 +1,4 @@
+const TWITTER_BEARER_TOKEN = process.env.TWITTER_BEARER_TOKEN;
+const REDIS_URL = process.env.REDIS_URL;
+
+export { TWITTER_BEARER_TOKEN, REDIS_URL };
