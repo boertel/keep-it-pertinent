@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import cn from "classnames";
 import { Link, Dropdown } from "@/components";
 import { useShortcutIsActive, useRegisterShortcut } from "@/hooks/useShortcut";
@@ -18,6 +18,7 @@ export default function Footer() {
       <div className="flex items-center justify-center space-x-3 flex-wrap">
         <Button
           as={Link}
+          scroll={false}
           href="/"
           className="pr-12 border-none text-blue-400 hover:underline"
           shortcut="shift+B"
@@ -87,25 +88,31 @@ function NotShortcut({ className, shortcut, ...props }) {
   );
 }
 
-function Button({
-  className,
-  children,
-  shortcut,
-  as: AsComponent = "button",
-  ...props
-}: {
-  className?: string;
-  shortcut?: string;
-  children: ReactNode;
-  as: any;
-}) {
-  useRegisterShortcut(shortcut, console.log);
-  return (
-    <AsComponent
-      className={cn("border-2 px-6 py-2 rounded-md", className)}
-      {...props}
-    >
-      {children}
-    </AsComponent>
-  );
-}
+const Button = forwardRef(
+  (
+    {
+      className,
+      children,
+      shortcut,
+      as: AsComponent = "button",
+      ...props
+    }: {
+      className?: string;
+      shortcut?: string;
+      children: ReactNode;
+      as: any;
+    },
+    ref
+  ) => {
+    useRegisterShortcut(shortcut, console.log);
+    return (
+      <AsComponent
+        ref={ref}
+        className={cn("border-2 px-6 py-2 rounded-md", className)}
+        {...props}
+      >
+        {children}
+      </AsComponent>
+    );
+  }
+);

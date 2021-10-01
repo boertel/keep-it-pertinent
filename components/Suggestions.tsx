@@ -15,7 +15,6 @@ export default function Suggestions({ tweets, className }) {
       </div>
     );
   }
-  console.log(tweets);
   const retweets = tweets.filter(({ referenced_tweets }) => referenced_tweets);
   const percentage = retweets.length / tweets.length;
   if (percentage > 0.8) {

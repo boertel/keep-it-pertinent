@@ -7,7 +7,7 @@ import { useRegisterShortcut } from "@/hooks/useShortcut";
 import { Bio, Footer, Tweet, Suggestions } from "@/components";
 import { useState, useEffect, useRef } from "react";
 
-const NUMBER_OF_TWEETS = 10;
+const NUMBER_OF_TWEETS = 20;
 
 export default function Username() {
   const router = useRouter();
@@ -16,7 +16,13 @@ export default function Username() {
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const current = useRef<HTMLElement>();
 
-  useRegisterShortcut("Escape", () => router.push("/"), [router]);
+  useRegisterShortcut(
+    "Escape",
+    () => {
+      router.push("/");
+    },
+    [router, query]
+  );
 
   useRegisterShortcut("j", () => {
     setCurrentIndex((prev) => {
@@ -39,7 +45,7 @@ export default function Username() {
     query.username && `/api/twitter/users/${query.username}`
   );
 
-  const { data } = useSWR(
+  const { data: tweets } = useSWR(
     user?.data.id && `/api/twitter/tweets/${user?.data.id}`
   );
 
@@ -61,11 +67,11 @@ export default function Username() {
             />
           </>
         )}
-        {data?.data && (
-          <Suggestions className="mt-10 mx-4 sm:mx-0" tweets={data.data} />
+        {tweets?.data && (
+          <Suggestions className="mt-10 mx-4 sm:mx-0" tweets={tweets.data} />
         )}
         <ul className="mt-10 mb-20 min-h-screen border-t border-gray-700">
-          {data?.data.slice(0, NUMBER_OF_TWEETS).map(
+          {tweets?.data.slice(0, NUMBER_OF_TWEETS).map(
             (
               {
                 id,
@@ -97,7 +103,7 @@ export default function Username() {
                   author={author}
                   createdAt={created_at}
                   referencedTweets={referenced_tweets}
-                  includes={data.includes}
+                  includes={tweets.includes}
                   attachments={attachments}
                   entities={entities}
                   className={cn(

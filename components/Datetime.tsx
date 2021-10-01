@@ -36,4 +36,4 @@ function getDatetime(str, format) {
 
 const formats = new Map();
 formats.set(ms("1d"), (str) => dayjs(str).fromNow());
-formats.set(ms("360d"), "MMM DD");
+formats.set(ms("130d"), "MMM DD");
