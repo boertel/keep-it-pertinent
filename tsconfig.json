@@ -5,8 +5,11 @@
     "baseUrl": ".",
     "paths": {
       "@/cache": ["cache"],
+      "@/hooks": ["hooks"],
+      "@/hooks/useShortcut": ["hooks/useShortcut"],
       "@/components": ["components"],
       "@/config": ["config"],
+      "@/dayjs": ["dayjs"],
       "@/redis": ["redis"],
       "@/twitter": ["twitter"]
     },

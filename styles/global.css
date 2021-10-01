@@ -19,6 +19,17 @@ a:hover,
 a:focus {
   text-decoration: underline;
 }
+a.no-underline:hover,
+a.no-underline:focus {
+  text-decoration: none;
+}
+
+:root {
+  --tw-outline-color: rgb(107, 114, 128);
+}
+.hover\:outline-color-blue:hover {
+  --tw-outline-color: #3b82f6;
+}
 
 @tailwind components;
 @tailwind utilities;

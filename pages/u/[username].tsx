@@ -1,117 +1,124 @@
 import { useRouter } from "next/router";
+import cn from "classnames";
 import { NextSeo } from "next-seo";
 import useSWR from "swr";
-import Link from "next/link";
 
-import { Tweet } from "@/components";
+import { useRegisterShortcut } from "@/hooks/useShortcut";
+import { Bio, Footer, Tweet, Suggestions } from "@/components";
+import { useState, useEffect, useRef } from "react";
+
+const NUMBER_OF_TWEETS = 10;
 
 export default function Username() {
-  const { query } = useRouter();
+  const router = useRouter();
+  const { query } = router;
 
-  const { data: user, isValidating: isValidatingUser } = useSWR(
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const current = useRef<HTMLElement>();
+
+  useRegisterShortcut("Escape", () => router.push("/"), [router]);
+
+  useRegisterShortcut("j", () => {
+    setCurrentIndex((prev) => {
+      return prev < NUMBER_OF_TWEETS - 1 ? prev + 1 : prev;
+    });
+  });
+  useRegisterShortcut("k", () => {
+    setCurrentIndex((prev) => {
+      return prev > 0 ? prev - 1 : prev;
+    });
+  });
+
+  useEffect(() => {
+    if (current.current) {
+      current.current.scrollIntoView();
+    }
+  }, [currentIndex]);
+
+  const { data: user } = useSWR(
     query.username && `/api/twitter/users/${query.username}`
   );
-  let website;
-  if (user?.data) {
-    website = user.data?.entities?.url?.urls[0];
-  }
 
-  const { data, isValidating } = useSWR(
-    query.username && `/api/twitter/tweets/${query.username}`
+  const { data } = useSWR(
+    user?.data.id && `/api/twitter/tweets/${user?.data.id}`
   );
 
-  console.log(data);
-  const users = {};
-
-  return isValidating || isValidatingUser ? null : (
+  return (
     <>
-      {user && (
-        <>
-          <NextSeo
-            title={`${user.data.name} (${user.data.username}) | expiration`}
-          />
-          <details>
-            <summary className="w-full flex items-center justify-between space-x-2 mt-10">
-              <div className="flex items-center space-x-2">
-                <img
-                  src={user.data.profile_image_url}
-                  className="rounded-full w-12 h-12 border-4 border-black"
-                  style={{ outline: "2px solid white" }}
-                />
-                <div className="flex flex-col">
-                  <h1 className="text-xxl font-bold">{user.data.name}</h1>
-                  <Link href={`https://twitter.com/${user.data.username}`}>
-                    <a
-                      className="text-gray-500"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <h3>@{user.data.username}</h3>
-                    </a>
-                  </Link>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <Link href={website.expanded_url}>
-                  <a
-                    className="text-blue-500"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {website.display_url}
-                  </a>
-                </Link>
-              </div>
-            </summary>
-            <div className="mt-4 text-sm italic">{user.data.description}</div>
-          </details>
-        </>
-      )}
-      <ul className="mt-10 mb-20 divide-y divide-gray-700 divide-solid">
-        {data?.data
-          .slice(0, 10)
-          .map(
-            ({
-              id,
-              text,
-              created_at,
-              referenced_tweets,
-              attachments,
-              entities,
-            }: {
-              id: number;
-              text: string;
-              created_at: string;
-              referenced_tweets: any;
-              attachments: any;
-              entities: any;
-            }) => {
+      <div className="max-w-prose mx-auto w-full">
+        {user && (
+          <>
+            <NextSeo
+              title={`${user.data.name} (${user.data.username}) | expiration`}
+            />
+            <Bio
+              name={user.data.name}
+              username={user.data.username}
+              description={user.data.description}
+              avatar={user.data.profile_image_url}
+              entities={user.data.entities}
+              className="px-4 sm:px-0"
+            />
+          </>
+        )}
+        {data?.data && (
+          <Suggestions className="mt-10 mx-4 sm:mx-0" tweets={data.data} />
+        )}
+        <ul className="mt-10 mb-20 min-h-screen border-t border-gray-700">
+          {data?.data.slice(0, NUMBER_OF_TWEETS).map(
+            (
+              {
+                id,
+                text,
+                created_at,
+                referenced_tweets,
+                attachments,
+                entities,
+              }: {
+                id: number;
+                text: string;
+                created_at: string;
+                referenced_tweets: any;
+                attachments: any;
+                entities: any;
+              },
+              index: number
+            ) => {
               const author = {
                 name: user.data.name,
                 username: user.data.username,
+                avatar: user.data.profile_image_url,
               };
               return (
                 <Tweet
+                  ref={index === currentIndex ? current : null}
                   key={id}
                   text={text}
+                  author={author}
                   createdAt={created_at}
                   referencedTweets={referenced_tweets}
                   includes={data.includes}
                   attachments={attachments}
                   entities={entities}
+                  className={cn(
+                    "px-4 sm:px-0 ring-offset-4 ring-offset-black border-b border-gray-700",
+                    {
+                      "ring border-transparent rounded-md":
+                        index === currentIndex,
+                    }
+                  )}
                 />
               );
             }
           )}
-      </ul>
-      <footer className="border-t border-gray-700 flex items-center justify-center space-x-3 sticky bottom-0 bg-black pt-4 pb-6">
-        <button className="border-2 border-red-400 px-6 py-2 rounded-md min-w-4">
-          Un-follow
-        </button>
-        <button className="border-2 border-green-400 px-6 py-2 rounded-md">
-          Next
-        </button>
-      </footer>
+        </ul>
+        {user?.data?.public_metrics && (
+          <div className="text-center mb-12">
+            <em>and {user.data.public_metrics.tweet_count} more tweets… </em>
+          </div>
+        )}
+      </div>
+      <Footer />
     </>
   );
 }

@@ -12,15 +12,16 @@ export default async function tweets(req, res) {
     },
   });
   let users = {};
-  data?.includes?.users.forEach((user) => {
+  data?.includes?.users?.forEach((user) => {
     users[user.id] = user;
   });
   let tweets = {};
-  data?.includes?.tweets.forEach((tweet) => {
+  console.log(data?.includes);
+  data?.includes?.tweets?.forEach((tweet) => {
     tweets[tweet.id] = tweet;
   });
   let media = {};
-  data?.includes?.media.forEach((m) => {
+  data?.includes?.media?.forEach((m) => {
     media[m.media_key] = m;
   });
   return res.status(200).json({

@@ -3,7 +3,11 @@ module.exports = {
   purge: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
   darkMode: "class",
   theme: {
-    extend: {},
+    extend: {
+      outline: {
+        "on-hover": "2px solid var(--tw-outline-color)",
+      },
+    },
   },
   variants: {
     extend: {},

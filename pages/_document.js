@@ -1,4 +1,5 @@
 import Document, { Html, Head, Main, NextScript } from "next/document";
+import Link from "next/link";
 
 class MyDocument extends Document {
   static async getInitialProps(ctx) {
@@ -11,9 +12,7 @@ class MyDocument extends Document {
       <Html className="dark">
         <Head />
         <body className="dark:bg-black dark:text-white">
-          <main className="max-w-prose mx-auto dark:bg-black min-h-screen flex flex-col">
-            <Main />
-          </main>
+          <Main />
           <NextScript />
         </body>
       </Html>
