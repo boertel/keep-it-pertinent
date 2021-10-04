@@ -1,7 +1,17 @@
 import twitter from "@/twitter";
 
 export default async function tweets(req, res) {
-  const { data } = await twitter.get(`/users/${req.query.id}/tweets`, {
+  const { data: user } = await twitter.get(
+    `/users/by/username/${req.query.id}`,
+    {
+      params: {
+        "user.fields":
+          "description,location,name,id,profile_image_url,username,entities,public_metrics",
+      },
+    }
+  );
+  console.log(user);
+  const { data } = await twitter.get(`/users/${user.data.id}/tweets`, {
     params: {
       exclude: "replies",
       expansions:

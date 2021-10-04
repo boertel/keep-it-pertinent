@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { useRegisterShortcut } from "@/hooks/useShortcut";
 import { Bio, Footer, Tweet, Suggestions } from "@/components";
 import { useState, useEffect, useRef } from "react";
+import { useFollowers } from "../../components/Followers";
 
 const NUMBER_OF_TWEETS = 20;
 
@@ -46,8 +47,12 @@ export default function Username() {
   );
 
   const { data: tweets } = useSWR(
-    user?.data.id && `/api/twitter/tweets/${user?.data.id}`
+    user?.data.id && `/api/twitter/tweets/${query.username}`
   );
+
+  const { next, previous } = useFollowers(router.query?.username);
+  useSWR(next?.username && `/api/twitter/tweets/${next?.username}`);
+  useSWR(previous?.username && `/api/twitter/tweets/${previous?.username}`);
 
   return (
     <>

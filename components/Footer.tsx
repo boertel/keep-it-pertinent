@@ -1,10 +1,16 @@
-import { forwardRef, useState } from "react";
+import { useCallback, forwardRef, useState } from "react";
+import { useRouter } from "next/router";
 import cn from "classnames";
 import { Link, Dropdown } from "@/components";
 import { useShortcutIsActive, useRegisterShortcut } from "@/hooks/useShortcut";
 
+import { useFollowers } from "./Followers";
+
 export default function Footer() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { next, previous } = useFollowers(router.query?.username);
+
   return (
     <footer className="border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2">
       <h3 className="mb-4 text-center font-bold text-lg">
@@ -16,16 +22,17 @@ export default function Footer() {
         </Button>
       </h3>
       <div className="flex items-center justify-center space-x-3 flex-wrap">
-        <Button
-          as={Link}
-          scroll={false}
-          href="/"
-          className="pr-12 border-none text-blue-400 hover:underline"
-          shortcut="shift+B"
-        >
-          <CommandKey shortcut="shift+B" /> B
-          <NotShortcut shortcut="shift+B">ack </NotShortcut>
-        </Button>
+        {previous && (
+          <Button
+            as={Link}
+            href={`/u/${previous.username}`}
+            className="pr-12 border-none text-blue-400 hover:underline"
+            shortcut="shift+B"
+          >
+            <CommandKey shortcut="shift+B" />B
+            <NotShortcut shortcut="shift+B">ack </NotShortcut>
+          </Button>
+        )}
         <Button
           className="pr-12 border-red-400 hover:bg-red-400 hover:bg-opacity-30"
           shortcut="shift+U"
@@ -48,20 +55,24 @@ export default function Footer() {
             <Dropdown.ItemButton>probation</Dropdown.ItemButton>
           </Dropdown.Items>
         </Dropdown>
-        <Button
-          className="pr-12 border-green-400 hover:bg-green-400 hover:bg-opacity-30"
-          shortcut="shift+N"
-        >
-          <CommandKey shortcut="shift+N" /> N
-          <NotShortcut shortcut="shift+N">ext</NotShortcut>
-        </Button>
+        {next && (
+          <Button
+            className="pr-12 border-green-400 hover:bg-green-400 hover:bg-opacity-30"
+            shortcut="shift+N"
+            as={Link}
+            href={`/u/${next.username}`}
+          >
+            <CommandKey shortcut="shift+N" />N
+            <NotShortcut shortcut="shift+N">ext</NotShortcut>
+          </Button>
+        )}
       </div>
     </footer>
   );
 }
 
 function CommandKey({ shortcut }: { shortcut: string }) {
-  return <Shortcut shortcut={shortcut}>⇧</Shortcut>;
+  return <Shortcut shortcut={shortcut}>⇧&nbsp;</Shortcut>;
 }
 
 function Shortcut({ className, shortcut, ...props }) {
@@ -95,20 +106,32 @@ const Button = forwardRef(
       children,
       shortcut,
       as: AsComponent = "button",
+      onClick,
+      href,
       ...props
     }: {
       className?: string;
       shortcut?: string;
       children: ReactNode;
+      onClick: (evt: any) => void;
+      href?: string;
       as: any;
     },
     ref
   ) => {
-    useRegisterShortcut(shortcut, console.log);
+    const router = useRouter();
+    const onShortcut = useCallback(() => {
+      if (href) {
+        return router.push(href);
+      }
+    }, [href]);
+    useRegisterShortcut(shortcut, onShortcut, [href]);
     return (
       <AsComponent
         ref={ref}
         className={cn("border-2 px-6 py-2 rounded-md", className)}
+        onClick={onClick}
+        href={href}
         {...props}
       >
         {children}

@@ -5,33 +5,36 @@ import Link from "next/link";
 import type { AppProps } from "next/app";
 import { ShortcutProvider, useShortcutIsActive } from "@/hooks/useShortcut";
 import { ScrollRestorationProvider } from "@/hooks/useScrollRestoration";
+import { FollowersProvider } from "../components/Followers";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <ScrollRestorationProvider>
-      <ShortcutProvider>
-        <header className="sticky top-0 max-w-prose mx-auto relative">
-          <div className="absolute top-0 right-full py-6 px-4 mt-[22px]">
-            <Link href="/">
-              <a className="no-underline">
-                <Logo />
-              </a>
-            </Link>
-          </div>
-        </header>
-        <main className="dark:bg-black min-h-screen flex flex-col">
-          <SWRConfig
-            value={{
-              revalidateOnFocus: false,
-              fetcher: (resource, init) =>
-                fetch(resource, init).then((res) => res.json()),
-            }}
-          >
-            <Component {...pageProps} />
-          </SWRConfig>
-        </main>
-      </ShortcutProvider>
-    </ScrollRestorationProvider>
+    <SWRConfig
+      value={{
+        revalidateOnFocus: false,
+        fetcher: (resource, init) =>
+          fetch(resource, init).then((res) => res.json()),
+      }}
+    >
+      <FollowersProvider>
+        <ScrollRestorationProvider>
+          <ShortcutProvider>
+            <header className="sticky top-0 max-w-prose mx-auto relative">
+              <div className="absolute top-0 right-full py-6 px-4 mt-[22px]">
+                <Link href="/">
+                  <a className="no-underline">
+                    <Logo />
+                  </a>
+                </Link>
+              </div>
+            </header>
+            <main className="dark:bg-black min-h-screen flex flex-col">
+              <Component {...pageProps} />
+            </main>
+          </ShortcutProvider>
+        </ScrollRestorationProvider>
+      </FollowersProvider>
+    </SWRConfig>
   );
 }
 
