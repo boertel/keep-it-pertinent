@@ -17,6 +17,7 @@ export default function Home() {
 
   const check = useJKNavigation((node: HTMLAnchorElement) => {
     if (node) {
+      console.log(node);
       node.focus();
     }
   }, followers?.data.length);
@@ -56,7 +57,7 @@ export default function Home() {
 }
 
 function useJKNavigation(callback: any, max?: number) {
-  const [navIndex, setNavIndex] = useState<number>(340);
+  const [navIndex, setNavIndex] = useState<number>(-1);
 
   useRegisterShortcut(
     "j",

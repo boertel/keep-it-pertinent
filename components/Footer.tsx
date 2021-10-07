@@ -1,21 +1,45 @@
-import { useCallback, forwardRef, useState } from "react";
+import { MouseEvent, useCallback, forwardRef, useState } from "react";
 import { useRouter } from "next/router";
 import cn from "classnames";
 import { Link, Dropdown } from "@/components";
 import { useShortcutIsActive, useRegisterShortcut } from "@/hooks/useShortcut";
+import useSWR, { useSWRConfig } from "swr";
 
 import { useFollowers } from "./Followers";
 
 export default function Footer() {
   const router = useRouter();
+  const { username } = router.query;
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { next, previous } = useFollowers(router.query?.username);
+  const { next, previous } = useFollowers(username);
+  const listId = "1244";
+  const { data } = useSWR(`/api/twitter/lists/${listId}`);
+  const { mutate } = useSWRConfig();
+
+  const favorite = useCallback(
+    async (evt?: MouseEvent<HTMLButtonElement>) => {
+      if (username) {
+        mutate(`/api/twitter/lists/${listId}`);
+        await fetch({
+          url: `/twitter/lists/${listId}`,
+          method: "POST",
+          body: JSON.stringify({ username }),
+        });
+      }
+    },
+    [mutate, listId, username]
+  );
 
   return (
     <footer className="border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2">
       <h3 className="mb-4 text-center font-bold text-lg">
         Are these tweets still relevant for you?
-        <Button className="py-2 border-none text-red-400" shortcut="shift+L">
+        <Button
+          className="py-2 border-none text-red-400"
+          shortcut="shift+L"
+          onClick={favorite}
+        >
           <CommandKey shortcut="shift+L" />
           <Shortcut shortcut="shift+L">L</Shortcut>
           <NotShortcut shortcut="shift+L">❤️</NotShortcut>

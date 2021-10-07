@@ -11,6 +11,8 @@ const FollowersContext = createContext({});
 
 export function FollowersProvider(props: any) {
   const { data: followers } = useSWR("/api/twitter/followers");
+  const { data: lists } = useSWR("/api/twitter/lists");
+  console.log(lists);
 
   const next = useCallback(
     (currentUsername?: string) => {
@@ -45,7 +47,9 @@ export function FollowersProvider(props: any) {
   return <FollowersContext.Provider value={context} {...props} />;
 }
 
-export function useFollowers(currentUsername?: string): FollowersReturn {
+export function useFollowers(
+  currentUsername?: string | string[]
+): FollowersReturn {
   const { followers, next, previous } = useContext(
     FollowersContext
   ) as FollowersReturn;

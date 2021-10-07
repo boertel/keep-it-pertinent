@@ -18,7 +18,9 @@ export function ScrollRestorationProvider(props: any) {
 
   const restore = useCallback(() => {
     page.current = pathname;
-    window.scrollTo(0, ref.current);
+    if (ref.current) {
+      window.scrollTo(0, ref.current);
+    }
   }, [pathname, pathname]);
 
   const onRouteChangeStart = useCallback(() => {

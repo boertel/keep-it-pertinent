@@ -2,7 +2,7 @@ import twitter from "@/twitter";
 
 export default async function tweets(req, res) {
   const { data: user } = await twitter.get(
-    `/users/by/username/${req.query.id}`,
+    `/2/users/by/username/${req.query.id}`,
     {
       params: {
         "user.fields":
@@ -10,7 +10,6 @@ export default async function tweets(req, res) {
       },
     }
   );
-  console.log(user);
   const { data } = await twitter.get(`/users/${user.data.id}/tweets`, {
     params: {
       exclude: "replies",
@@ -26,7 +25,6 @@ export default async function tweets(req, res) {
     users[user.id] = user;
   });
   let tweets = {};
-  console.log(data?.includes);
   data?.includes?.tweets?.forEach((tweet) => {
     tweets[tweet.id] = tweet;
   });
