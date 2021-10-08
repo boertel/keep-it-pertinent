@@ -13,22 +13,14 @@ export default function Footer() {
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { next, previous } = useFollowers(username);
-  const listId = "1244";
-  const { data } = useSWR(`/api/twitter/lists/${listId}`);
   const { mutate } = useSWRConfig();
 
   const favorite = useCallback(
     async (evt?: MouseEvent<HTMLButtonElement>) => {
       if (username) {
-        mutate(`/api/twitter/lists/${listId}`);
-        await fetch({
-          url: `/twitter/lists/${listId}`,
-          method: "POST",
-          body: JSON.stringify({ username }),
-        });
       }
     },
-    [mutate, listId, username]
+    [mutate, username]
   );
 
   return (

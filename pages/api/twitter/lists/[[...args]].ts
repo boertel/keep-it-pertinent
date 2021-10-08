@@ -1,13 +1,15 @@
-import twitter from "@/twitter";
+import Twitter from "@/twitter";
 
 export default async function list(req, res) {
-  const { listId } = req.query;
+  const { args } = req.query;
+
+  const t = new Twitter({
+    oauth_token: "102964419-va2cMyN6ujyOc8VgLwGcn1xn0Zv5hXDnVGn5YsDT",
+    oauth_token_secret: "pKGl51gACJVbm0lo8BOwP6Q3yHHPONIytkrGrN0r8MTSY",
+  });
 
   if (req.method === "GET") {
-    const { data, ...etc } = await twitter.get(
-      `/1.1/lists/list.json?screen_name=boertel`
-    );
-    console.log(etc);
+    const { data } = await t.get("lists/list");
     return res.json(data);
   } else if (req.method === "POST") {
     const body = {

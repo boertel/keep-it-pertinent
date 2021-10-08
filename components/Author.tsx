@@ -1,4 +1,3 @@
-import dayjs from "@/dayjs";
 import cn from "classnames";
 
 export default function Author({
@@ -10,7 +9,7 @@ export default function Author({
 }: {
   name: string;
   username: string;
-  as: any;
+  as?: any;
   className?: string;
 }) {
   return (

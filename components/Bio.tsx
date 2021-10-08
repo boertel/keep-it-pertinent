@@ -13,19 +13,19 @@ interface BioProps {
   username: string;
   description: string;
   avatar: string;
-  entities: any;
+  urls?: any;
   className?: string;
 }
 
 export default function Bio({
   name,
   username,
-  entities,
+  urls = [],
   description,
   avatar,
   className,
 }: BioProps) {
-  let website: ExpendableUrl | null = entities?.url?.urls[0] || null;
+  let website: ExpendableUrl | null = urls.length ? urls[0] : null;
   return (
     <>
       <div
@@ -51,13 +51,13 @@ export default function Bio({
         </div>
         <div className="flex items-center">
           {website && (
-            <Link href={website.expanded_url}>
+            <Link href={website.expandedUrl}>
               <a
                 className="text-blue-500"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {website.display_url}
+                {website.displayUrl}
               </a>
             </Link>
           )}

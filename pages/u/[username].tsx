@@ -66,8 +66,8 @@ export default function Username() {
               name={user.data.name}
               username={user.data.username}
               description={user.data.description}
-              avatar={user.data.profile_image_url}
-              entities={user.data.entities}
+              avatar={user.data.avatar}
+              urls={user.data.urls}
               className="px-4 sm:px-0"
             />
           </>
@@ -81,36 +81,29 @@ export default function Username() {
               {
                 id,
                 text,
-                created_at,
-                referenced_tweets,
-                attachments,
-                entities,
+                createdAt,
+                author,
+                retweet,
+                media,
               }: {
                 id: number;
                 text: string;
-                created_at: string;
-                referenced_tweets: any;
-                attachments: any;
-                entities: any;
+                createdAt: string;
+                author: any;
+                retweet: any;
+                media: any;
               },
               index: number
             ) => {
-              const author = {
-                name: user.data.name,
-                username: user.data.username,
-                avatar: user.data.profile_image_url,
-              };
               return (
                 <Tweet
                   ref={index === currentIndex ? current : null}
                   key={id}
                   text={text}
                   author={author}
-                  createdAt={created_at}
-                  referencedTweets={referenced_tweets}
-                  includes={tweets.includes}
-                  attachments={attachments}
-                  entities={entities}
+                  createdAt={createdAt}
+                  retweet={retweet}
+                  media={media}
                   className={cn(
                     "px-4 sm:px-0 ring-offset-4 ring-offset-black border-b border-gray-700",
                     {

@@ -1,14 +1,11 @@
-import twitter from "@/twitter";
+import Twitter from "@/twitter";
 
 export default async function user(req, res) {
-  const { data } = await twitter.get(
-    `/2/users/by/username/${req.query.username}`,
-    {
-      params: {
-        "user.fields":
-          "description,location,name,id,profile_image_url,username,entities,public_metrics",
-      },
-    }
-  );
-  return res.status(200).json(data);
+  const t = new Twitter({
+    oauth_token: "102964419-va2cMyN6ujyOc8VgLwGcn1xn0Zv5hXDnVGn5YsDT",
+    oauth_token_secret: "pKGl51gACJVbm0lo8BOwP6Q3yHHPONIytkrGrN0r8MTSY",
+  });
+
+  const data = await t.getUserByUsername(req.query.username);
+  return res.status(200).json({ data });
 }

@@ -4,8 +4,8 @@ import cn from "classnames";
 export default function Suggestions({ tweets, className }) {
   let suggestions = [];
   const lastTweet = tweets[0];
-  if (lastTweet && dayjs().diff(lastTweet.created_at, "year") >= 1) {
-    const diff = dayjs().diff(lastTweet.created_at, "year");
+  if (lastTweet && dayjs().diff(lastTweet.createdAt, "year") >= 1) {
+    const diff = dayjs().diff(lastTweet.createdAt, "year");
     suggestions.push(
       <div
         key="a-year"
@@ -15,7 +15,7 @@ export default function Suggestions({ tweets, className }) {
       </div>
     );
   }
-  const retweets = tweets.filter(({ referenced_tweets }) => referenced_tweets);
+  const retweets = tweets.filter(({ isRetweet }) => isRetweet);
   const percentage = retweets.length / tweets.length;
   if (percentage > 0.8) {
     suggestions.push(
@@ -31,7 +31,7 @@ export default function Suggestions({ tweets, className }) {
   let diffs = [];
   tweets.forEach((tweet, index: number) => {
     if (previous) {
-      diffs.push(dayjs(previous.created_at).diff(tweet.created_at, "seconds"));
+      diffs.push(dayjs(previous.createdAt).diff(tweet.createdAt, "seconds"));
     }
     previous = tweet;
   });

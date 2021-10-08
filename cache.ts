@@ -1,7 +1,7 @@
 import client from "@/redis";
 
 class Cache {
-  constructor(prefix, options = {}) {
+  constructor(prefix: string, options = {}) {
     this._client = client;
     this._prefix = prefix;
     this._expiration = options.expiration;
@@ -35,7 +35,7 @@ class Cache {
     return wrapped.bind(this);
   }
 
-  async get(key) {
+  async get(key: string) {
     return new Promise((resolve, reject) => {
       this._client.get(this.key(key), (err, reply) => {
         if (err) {
@@ -49,7 +49,7 @@ class Cache {
     });
   }
 
-  async set(key, value, expiration) {
+  async set(key: string, value, expiration) {
     expiration = expiration || this._expiration;
     const _value = JSON.stringify(value);
     const _key = this.key(key);
@@ -61,7 +61,7 @@ class Cache {
     return value;
   }
 
-  del(key) {
+  del(key: string) {
     return new Promise((resolve, reject) => {
       this._client.del(this.key(key), (err, count) => {
         if (err) {

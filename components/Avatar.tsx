@@ -23,17 +23,20 @@ export default function Avatar({
   }
   image.src = src;
   return (
-    <div className={cn("w-12 h-12 flex-shrink-0 m-[2px]", className)}>
+    <div
+      className={cn(
+        "z-20 w-12 h-12 flex-shrink-0 border-2 border-gray-400 rounded-full",
+        className
+      )}
+    >
       <img
         src={src}
         className={cn(
-          "rounded-full border-4 border-black outline-gray outline-on-hover transition-colors",
-          { "bg-gray-700": !isLoaded }
+          "rounded-full border-4 border-black transition-colors min-w-full min-h-full",
+          {
+            "bg-gray-700": !isLoaded,
+          }
         )}
-        style={{
-          minWidth: "48px",
-          minHeight: "48px",
-        }}
       />
     </div>
   );
