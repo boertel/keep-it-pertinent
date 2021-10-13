@@ -87,9 +87,11 @@ export default function Username() {
           </>
         )}
         {tweets?.data && (
-          <Suggestions className="mt-10 mx-4 sm:mx-0" tweets={tweets.data} />
+          <div className="mt-10 border-b border-gray-700">
+            <Suggestions className="mt-10 mx-4 sm:mx-0" tweets={tweets.data} />
+          </div>
         )}
-        <ul className="mt-10 mb-20 min-h-screen border-t border-gray-700">
+        <ul className="mb-20 min-h-screen">
           {tweets?.data.slice(0, NUMBER_OF_TWEETS).map(
             (
               {
