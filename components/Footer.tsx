@@ -66,12 +66,8 @@ export default function Footer() {
   return (
     <footer className="border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20">
       <h3 className="mb-4 text-center font-bold text-lg">
-        Are these tweets still relevant for you?
-        <Button className="py-2 border-none text-red-400" shortcut="shift+L">
-          <CommandKey shortcut="shift+L" />
-          <Shortcut shortcut="shift+L">L</Shortcut>
-          <NotShortcut shortcut="shift+L">❤️</NotShortcut>
-        </Button>
+        Are these tweets still relevant to you?
+        <Favorite username={username} />
       </h3>
       <div className="flex items-center justify-center space-x-3 flex-wrap">
         {previous && (
@@ -116,6 +112,49 @@ export default function Footer() {
   );
 }
 
+function Favorite({ username }) {
+  const [favorited, setFavorited] = useState<boolean>(false);
+
+  const moveToFavorite = useCallback(async () => {
+    if (username) {
+      fetch(`/api/twitter/favorite`, {
+        body: JSON.stringify({ username }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    setFavorited(true);
+  }, [username]);
+
+  useEffect(() => {
+    let timeout;
+    if (favorited) {
+      timeout = setTimeout(() => {
+        setFavorited(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timeout);
+  }, [favorited, setFavorited]);
+
+  return (
+    <Button
+      className="py-2 border-none text-red-400 relative"
+      shortcut="shift+L"
+      onClick={moveToFavorite}
+    >
+      <CommandKey shortcut="shift+L" />
+      <Shortcut shortcut="shift+L">L</Shortcut>
+      <NotShortcut
+        shortcut="shift+L"
+        style={{ transition: "transform .2s ease-in-out" }}
+        className={cn("inline-block", { "scale-150": favorited })}
+      >
+        ❤️
+      </NotShortcut>
+    </Button>
+  );
+}
+
 function ListDropdown({ username }: { username: string }) {
   const [moved, setMoved] = useState<string | null>(null);
   const button = useRef<HTMLButtonElement>();
@@ -146,7 +185,7 @@ function ListDropdown({ username }: { username: string }) {
       }, 2000);
     }
     return () => clearTimeout(timeout);
-  }, [moved]);
+  }, [moved, setMoved]);
 
   return (
     <Dropdown>
