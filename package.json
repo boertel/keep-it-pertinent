@@ -16,6 +16,7 @@
     "classnames": "^2.2.6",
     "dayjs": "^1.10.7",
     "ioredis": "^4.27.9",
+    "lodash.debounce": "^4.0.8",
     "lodash.get": "^4.4.2",
     "lodash.pick": "^4.4.0",
     "lodash.pickby": "^4.6.0",

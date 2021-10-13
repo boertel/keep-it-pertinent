@@ -12,22 +12,29 @@ const ScrollRestorationContext = createContext({});
 
 export function ScrollRestorationProvider(props: any) {
   const ref = useRef<number>(0);
+  const store = useRef<{ [key: string]: any }>({});
+  const onLeave = useRef<any>();
   const page = useRef<string | null>(null);
 
   const { pathname } = useRouter();
 
-  const restore = useCallback(() => {
-    page.current = pathname;
-    if (ref.current) {
-      window.scrollTo(0, ref.current);
-    }
-  }, [pathname, pathname]);
+  const restore = useCallback(
+    (callback) => {
+      page.current = pathname;
+      onLeave.current = callback;
+      if (ref.current) {
+        window.scrollTo(0, ref.current);
+      }
+    },
+    [pathname, pathname]
+  );
 
   const onRouteChangeStart = useCallback(() => {
-    if (page.current === pathname) {
-      ref.current = window.scrollY;
+    if (page.current === pathname && onLeave.current) {
+      onLeave.current();
+      //ref.current = window.scrollY;
     }
-  }, [pathname]);
+  }, [pathname, onLeave]);
 
   useEffect(() => {
     Router.events.on("routeChangeStart", onRouteChangeStart);

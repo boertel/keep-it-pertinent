@@ -2,17 +2,20 @@ import { Menu, Transition } from "@headlessui/react";
 import cn from "classnames";
 import { Fragment } from "react";
 
-export default function Dropdown({ children, open }) {
+export default function Dropdown({ children }) {
   return (
-    <Menu as="div" className="relative inline-block text-left" open={open}>
-      {children}
+    <Menu as="div" className="relative inline-block text-left">
+      {({ open }) => {
+        return children({ open });
+      }}
     </Menu>
   );
 }
 
-function Items({ children, className }) {
+function Items({ children, className, open }) {
   return (
     <Transition
+      show={open}
       as={Fragment}
       enter="transition ease-out duration-100"
       enterFrom="transform opacity-0 scale-95"
@@ -21,7 +24,10 @@ function Items({ children, className }) {
       leaveFrom="transform opacity-100 scale-100"
       leaveTo="transform opacity-0 scale-95"
     >
-      <Menu.Items className="absolute bottom-full w-full mb-2 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none bg-black p-1 border border-gray-700">
+      <Menu.Items
+        static
+        className="absolute bottom-full w-full mb-2 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none bg-black p-1 border border-gray-700"
+      >
         {children}
       </Menu.Items>
     </Transition>
@@ -47,11 +53,12 @@ function ItemInput(props) {
   );
 }
 
-function ItemButton({ children, ...props }) {
+function ItemButton({ children, onClick, ...props }) {
   return (
     <Menu.Item>
       {({ active }) => (
         <button
+          onClick={onClick}
           className={cn(
             "group flex rounded-md items-center w-full px-2 py-2 text-sm",
             { "bg-yellow-400 bg-opacity-40 text-white": active }

@@ -35,7 +35,7 @@ export default class Twitter {
   }
 
   post(...args) {
-    return promisify(this.client.post);
+    return promisify(this.client.post)(...args);
   }
 
   stream(...args) {

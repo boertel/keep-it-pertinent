@@ -4,18 +4,20 @@ export default async function list(req, res) {
   const { args } = req.query;
 
   const t = new Twitter({
-    oauth_token: "102964419-va2cMyN6ujyOc8VgLwGcn1xn0Zv5hXDnVGn5YsDT",
-    oauth_token_secret: "pKGl51gACJVbm0lo8BOwP6Q3yHHPONIytkrGrN0r8MTSY",
+    oauth_token: "102964419-u84KlIMhYuofF1soXSTAq82uZpoe5DfaBSdjN5gS",
+    oauth_token_secret: "kjvS4qWISvihamU85lgGuOtsmRVWFNBGZelRzF4UU94eA",
   });
 
   if (req.method === "GET") {
     const { data } = await t.get("lists/list");
-    return res.json(data);
+    return res.json(data.map(({ id_str, name }) => ({ id: id_str, name })));
   } else if (req.method === "POST") {
     const body = {
-      userId: req.body.userId,
+      list_id: args[0],
+      screen_name: req.body.username,
     };
-    const { data } = await twitter.post(`/lists/${listId}/members`, body);
+    console.log(body);
+    const { data } = await t.post(`/lists/members/create`, body);
     return res.json(data);
   }
 }
