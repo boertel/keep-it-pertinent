@@ -1,6 +1,5 @@
 import cn from "classnames";
 import { NextSeo } from "next-seo";
-import debounce from "lodash/debounce";
 
 import Link from "next/link";
 import { Author, Avatar } from "@/components";
@@ -12,25 +11,40 @@ import {
   useCallback,
 } from "react";
 
-import { useScrollRestoration } from "@/hooks/useScrollRestoration";
+import { useOnLeave, useOnEnter } from "@/hooks/useScrollRestoration";
 import { useRegisterShortcut } from "@/hooks/useShortcut";
 
 import { useFollowers } from "../components/Followers";
 
+interface ScrollRestoration {
+  scrollY: number;
+  navIndex: number;
+}
+
 export default function Home() {
   const { followers } = useFollowers();
-  const { restore } = useScrollRestoration();
-  const navIndex = useJKNavigation();
+  const [navIndex, setNavIndex] = useJKNavigation();
 
   const onLeave = useCallback(() => {
     return {
+      scrollY: window.scrollY,
       navIndex,
     };
   }, [navIndex]);
 
-  useEffect(() => {
-    restore(onLeave);
-  }, [restore, onLeave]);
+  const onEnter = useCallback(
+    ({ scrollY, navIndex }: ScrollRestoration) => {
+      window.scrollTo(0, scrollY);
+      if (navIndex !== undefined) {
+        setNavIndex(navIndex);
+      }
+    },
+    [setNavIndex]
+  );
+
+  useOnEnter<ScrollRestoration>(onEnter);
+  useOnLeave<ScrollRestoration>(onLeave);
+
   const ref = useRef<HTMLAnchorElement | null>(null);
 
   const focus = useCallback((node: HTMLAnchorElement) => {
@@ -133,5 +147,5 @@ function useJKNavigation(max?: number) {
     [setNavIndex]
   );
 
-  return navIndex;
+  return [navIndex, setNavIndex];
 }

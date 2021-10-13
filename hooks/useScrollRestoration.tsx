@@ -11,28 +11,22 @@ import Router, { useRouter } from "next/router";
 const ScrollRestorationContext = createContext({});
 
 export function ScrollRestorationProvider(props: any) {
-  const ref = useRef<number>(0);
   const store = useRef<{ [key: string]: any }>({});
   const onLeave = useRef<any>();
+  const onEnter = useRef<any>();
   const page = useRef<string | null>(null);
 
   const { pathname } = useRouter();
 
-  const restore = useCallback(
-    (callback) => {
-      page.current = pathname;
-      onLeave.current = callback;
-      if (ref.current) {
-        window.scrollTo(0, ref.current);
-      }
-    },
-    [pathname, pathname]
-  );
+  useEffect(() => {
+    if (onEnter.current) {
+      onEnter.current(store.current);
+    }
+  }, [pathname]);
 
   const onRouteChangeStart = useCallback(() => {
     if (page.current === pathname && onLeave.current) {
-      onLeave.current();
-      //ref.current = window.scrollY;
+      store.current = onLeave.current();
     }
   }, [pathname, onLeave]);
 
@@ -41,14 +35,41 @@ export function ScrollRestorationProvider(props: any) {
     return () => Router.events.off("routeChangeStart", onRouteChangeStart);
   }, [onRouteChangeStart]);
 
+  const enter = useCallback(
+    (callback) => {
+      page.current = pathname;
+      onEnter.current = callback;
+    },
+    [pathname]
+  );
+
+  const leave = useCallback((callback) => {
+    onLeave.current = callback;
+  }, []);
+
   const context = useMemo(
     () => ({
-      restore,
+      enter,
+      leave,
     }),
-    [restore]
+    [enter, leave]
   );
 
   return <ScrollRestorationContext.Provider value={context} {...props} />;
+}
+
+export function useOnEnter<T>(callback: (arg0: T) => void) {
+  const { enter } = useScrollRestoration();
+  useEffect(() => {
+    enter(callback);
+  }, [enter, callback]);
+}
+
+export function useOnLeave<T>(callback: () => T) {
+  const { leave } = useScrollRestoration();
+  useEffect(() => {
+    leave(callback);
+  }, [leave, callback]);
 }
 
 export function useScrollRestoration(): any {

@@ -146,8 +146,10 @@ function Favorite({ username }) {
       <Shortcut shortcut="shift+L">L</Shortcut>
       <NotShortcut
         shortcut="shift+L"
-        style={{ transition: "transform .2s ease-in-out" }}
-        className={cn("inline-block", { "scale-150": favorited })}
+        style={{
+          animationIterationCount: 4,
+        }}
+        className={cn("inline-block", { "animate-ping": favorited })}
       >
         ❤️
       </NotShortcut>
@@ -215,6 +217,7 @@ function ListDropdown({ username }: { username: string }) {
           <Dropdown.Items className="p-1" open={open}>
             {lists.map((list, index) => (
               <DropdownListItem
+                key={list.id}
                 id={list.id}
                 onClick={() => {
                   moveToList(list);

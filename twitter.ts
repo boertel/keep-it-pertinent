@@ -1,4 +1,6 @@
 import OtherTwitter from "twitter";
+import db from "@/db";
+import Cookies from "cookies";
 import redis from "@/redis";
 import dayjs from "@/dayjs";
 import { cache } from "@/cache";
@@ -165,11 +167,23 @@ export default class Twitter {
 }
 
 export async function createTwitterFromReq(req) {
-  //oauth_token: ,
-  //oauth_token_secret: ,
+  const cookies = new Cookies(req);
+  const sessionToken = cookies.get("next-auth.session-token");
+  const user = await db.user.findFirst({
+    where: {
+      sessions: { some: { sessionToken } },
+    },
+    include: {
+      accounts: true,
+    },
+  });
+
+  const twitterAccount = user.accounts.find(
+    ({ provider }) => provider === "twitter"
+  );
   return new Twitter({
-    oauth_token: "102964419-u84KlIMhYuofF1soXSTAq82uZpoe5DfaBSdjN5gS",
-    oauth_token_secret: "kjvS4qWISvihamU85lgGuOtsmRVWFNBGZelRzF4UU94eA",
+    oauth_token: twitterAccount.oauth_token,
+    oauth_token_secret: twitterAccount.oauth_token_secret,
     userId: "1",
   });
 }

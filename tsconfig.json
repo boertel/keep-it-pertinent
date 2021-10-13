@@ -5,6 +5,7 @@
     "baseUrl": ".",
     "paths": {
       "@/cache": ["cache"],
+      "@/db": ["db"],
       "@/hooks": ["hooks"],
       "@/hooks/useShortcut": ["hooks/useShortcut"],
       "@/hooks/useScrollRestoration": ["hooks/useScrollRestoration"],
