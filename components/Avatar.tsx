@@ -1,13 +1,21 @@
 import cn from "classnames";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
-function useOnLoad(objWithOnLoad) {
+function useImageOnLoad(src: string | null): boolean {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  objWithOnLoad.onload = () => {
-    setIsLoaded(true);
-  };
+  const img = useRef<typeof Image | null>(null);
 
-  return [objWithOnLoad, isLoaded];
+  useEffect(() => {
+    img.current = new Image();
+    if (img.current) {
+      img.current.onload = () => {
+        setIsLoaded(true);
+      };
+      img.current.src = src;
+    }
+  }, [src]);
+
+  return isLoaded;
 }
 
 export default function Avatar({
@@ -17,11 +25,7 @@ export default function Avatar({
   src?: string;
   className?: string;
 }) {
-  const [image, isLoaded] = useOnLoad(new Image());
-  if (!src) {
-    return null;
-  }
-  image.src = src;
+  const isLoaded = useImageOnLoad(src);
   return (
     <div
       className={cn(

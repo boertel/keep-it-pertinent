@@ -7,6 +7,12 @@ interface FollowersReturn {
   previous: string;
 }
 
+interface User {
+  id: string;
+  avatar: string;
+  username: string;
+}
+
 const FollowersContext = createContext({});
 
 export function FollowersProvider(props: any) {

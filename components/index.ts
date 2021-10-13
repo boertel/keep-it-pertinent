@@ -5,6 +5,6 @@ export { default as Datetime } from "./Datetime";
 export { default as Dropdown } from "./Dropdown";
 export { default as Footer } from "./Footer";
 export { default as Link } from "./Link";
-export { default as ShowShortcut } from "./ShowShortcut";
 export { default as Suggestions } from "./Suggestions";
 export { default as Tweet } from "./Tweet";
+export { default as Dialog } from "./Dialog";

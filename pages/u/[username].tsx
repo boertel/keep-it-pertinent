@@ -18,23 +18,23 @@ export default function Username() {
   const current = useRef<HTMLElement>();
 
   useRegisterShortcut(
-    "Escape",
+    "j",
     () => {
-      router.push("/");
+      setCurrentIndex((prev) => {
+        return prev < NUMBER_OF_TWEETS - 1 ? prev + 1 : prev;
+      });
     },
-    [router, query]
+    [setCurrentIndex]
   );
-
-  useRegisterShortcut("j", () => {
-    setCurrentIndex((prev) => {
-      return prev < NUMBER_OF_TWEETS - 1 ? prev + 1 : prev;
-    });
-  });
-  useRegisterShortcut("k", () => {
-    setCurrentIndex((prev) => {
-      return prev > 0 ? prev - 1 : prev;
-    });
-  });
+  useRegisterShortcut(
+    "k",
+    () => {
+      setCurrentIndex((prev) => {
+        return prev > 0 ? prev - 1 : prev;
+      });
+    },
+    [setCurrentIndex]
+  );
 
   useEffect(() => {
     if (current.current) {
@@ -53,6 +53,20 @@ export default function Username() {
   const { next, previous } = useFollowers(router.query?.username);
   useSWR(next?.username && `/api/twitter/tweets/${next?.username}`);
   useSWR(previous?.username && `/api/twitter/tweets/${previous?.username}`);
+
+  useEffect(() => {
+    if (next?.avatar) {
+      const img = new Image();
+      img.src = next.avatar;
+    }
+  }, [next]);
+
+  useEffect(() => {
+    if (previous?.avatar) {
+      const img = new Image();
+      img.src = previous.avatar;
+    }
+  }, [previous]);
 
   return (
     <>

@@ -1,6 +1,6 @@
 import { Menu, Transition } from "@headlessui/react";
 import cn from "classnames";
-import { Fragment } from "react";
+import { forwardRef, Fragment } from "react";
 
 export default function Dropdown({ children }) {
   return (
@@ -34,9 +34,9 @@ function Items({ children, className, open }) {
   );
 }
 
-function Button({ as, ...props }) {
-  return <Menu.Button as={as} {...props} />;
-}
+const Button = forwardRef(({ as, ...props }, ref) => {
+  return <Menu.Button ref={ref} as={as} {...props} />;
+});
 
 function ItemInput(props) {
   return (
@@ -53,7 +53,7 @@ function ItemInput(props) {
   );
 }
 
-function ItemButton({ children, onClick, ...props }) {
+function ItemButton({ children, onClick, className, ...props }) {
   return (
     <Menu.Item>
       {({ active }) => (
@@ -61,7 +61,8 @@ function ItemButton({ children, onClick, ...props }) {
           onClick={onClick}
           className={cn(
             "group flex rounded-md items-center w-full px-2 py-2 text-sm",
-            { "bg-yellow-400 bg-opacity-40 text-white": active }
+            { "bg-yellow-400 bg-opacity-40 text-white": active },
+            className
           )}
         >
           {children}

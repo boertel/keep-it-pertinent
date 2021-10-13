@@ -1,23 +1,15 @@
-import Twitter from "@/twitter";
+import { createTwitterFromReq } from "@/twitter";
 
 export default async function list(req, res) {
   const { args } = req.query;
 
-  const t = new Twitter({
-    oauth_token: "102964419-u84KlIMhYuofF1soXSTAq82uZpoe5DfaBSdjN5gS",
-    oauth_token_secret: "kjvS4qWISvihamU85lgGuOtsmRVWFNBGZelRzF4UU94eA",
-  });
+  const t = await createTwitterFromReq(req);
 
   if (req.method === "GET") {
-    const { data } = await t.get("lists/list");
-    return res.json(data.map(({ id_str, name }) => ({ id: id_str, name })));
+    return res.json(await t.getLists());
   } else if (req.method === "POST") {
-    const body = {
-      list_id: args[0],
-      screen_name: req.body.username,
-    };
-    console.log(body);
-    const { data } = await t.post(`/lists/members/create`, body);
+    const listId = args[0];
+    const data = await t.addToList(listId, req.body.username);
     return res.json(data);
   }
 }

@@ -51,7 +51,7 @@ specials.set("alt", (evt) => evt.altKey);
 specials.set("control", (evt) => evt.ctrlKey);
 specials.set("shift", (evt) => evt.shiftKey);
 
-function serialize(evt) {
+function serialize(evt): [string, boolean] {
   let parts = [];
   for (const [key, func] of specials) {
     if (func(evt)) {
@@ -94,7 +94,7 @@ export function ShortcutProvider(props) {
       if (combination === helpCombination) {
         isHelp.current = !isHelp.current;
       }
-      let combinations = {};
+      let combinations: { [key: string]: boolean } = {};
       for (const key in shortcuts) {
         if (combination === helpCombination) {
           combinations[key] = isHelp.current;
@@ -142,7 +142,10 @@ export function ShortcutProvider(props) {
   }, [onKeyDown, onKeyUp]);
 
   const register = useCallback(
-    (combination, callback) => {
+    (combination: string | null, callback) => {
+      if (combination === null) {
+        return;
+      }
       dispatch({
         type: "REGISTER",
         combination,
@@ -153,7 +156,10 @@ export function ShortcutProvider(props) {
   );
 
   const unregister = useCallback(
-    (combination, callback) => {
+    (combination: string | null, callback) => {
+      if (combination === null) {
+        return;
+      }
       dispatch({
         type: "UNREGISTER",
         combination,
@@ -181,7 +187,11 @@ export function useShortcut() {
   return useContext(ShortcutContext);
 }
 
-export function useRegisterShortcut(combination, callback, dependencies = []) {
+export function useRegisterShortcut(
+  combination: string | null,
+  callback: () => void,
+  dependencies = []
+) {
   const { register, unregister, hints } = useShortcut();
   const memoed = useCallback(callback, dependencies);
 
@@ -194,7 +204,7 @@ export function useRegisterShortcut(combination, callback, dependencies = []) {
   };
 }
 
-export function useShortcutIsActive(combination) {
+export function useShortcutIsActive(combination: string) {
   const { hints } = useShortcut();
   return hints[combination];
 }

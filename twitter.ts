@@ -1,19 +1,20 @@
 import OtherTwitter from "twitter";
-import pick from "lodash.pick";
-import get from "lodash.get";
-import pickBy from "lodash.pickBy";
-import mapValues from "lodash.mapValues";
+import redis from "@/redis";
 import dayjs from "@/dayjs";
 import { cache } from "@/cache";
 import { TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET } from "@/config";
 
 export default class Twitter {
+  userId: string;
+
   constructor({
     oauth_token,
     oauth_token_secret,
+    userId,
   }: {
     oauth_token: string;
     oauth_token_secret: string;
+    userId: string;
   }) {
     this.client = new OtherTwitter({
       consumer_key: TWITTER_CLIENT_ID,
@@ -22,16 +23,38 @@ export default class Twitter {
       access_token_secret: oauth_token_secret,
     });
 
+    this.userId = userId;
+
     const methods = ["get", "post", "stream"];
     methods.forEach((method) => {
       this.client[method] = promisify(this.client[method].bind(this.client));
     });
   }
 
+  getByUser(...args) {
+    if (!this.userId) {
+      throw Error("userId must be defined in order to cache this API call");
+    }
+    return this._get(this.userId, ...args);
+  }
+
   get(...args) {
-    return cache("twitter:get", { expiration: 60 * 120 })(this.client.get)(
-      ...args
-    );
+    return this._get(null, ...args);
+  }
+
+  _get(cacheKey: string | null, ...args) {
+    let key = ["twitter", "get"];
+    if (cacheKey) {
+      key.push(cacheKey);
+    }
+    // TODO hack! we should be able to define this when calling `get` / `getByUser`
+    let params = undefined;
+    if (["/friends/list", "/lists/list"].includes(args[0])) {
+      params = () => args[0];
+    }
+    return cache(key.join(":"), { expiration: 60 * 120, params })(
+      this.client.get
+    )(...args);
   }
 
   post(...args) {
@@ -42,6 +65,67 @@ export default class Twitter {
     return promisify(this.client.stream);
   }
 
+  async getLists() {
+    const { data } = await this.getByUser("/lists/list");
+    return data.map(parseList);
+  }
+
+  async getOrCreateList(name: string, mode?: string) {
+    const lists = await this.getLists();
+    const existingList = lists.find((list) => list.name === name);
+    if (existingList) {
+      return existingList;
+    } else {
+      const body = {
+        name,
+        mode: mode || "private",
+      };
+      const { data: created } = await this.post("/lists/create", body);
+      await redis.del(`twitter:get:${this.userId}:/lists/list`);
+      return parseList(created);
+    }
+  }
+
+  async addToList(listId: string, username: string) {
+    const body = {
+      list_id: listId,
+      screen_name: username,
+    };
+    const { data } = await this.post(`/lists/members/create`, body);
+    return data;
+  }
+
+  async unfollow(username: string) {
+    const body = {
+      screen_name: username,
+    };
+
+    // TODO would be nicer to have something cleaner
+    const { data } = await this.post("/friendships/destroy", body);
+    const key = `twitter:get:${this.userId}:/friends/list`;
+    const cached = await redis.get(key);
+    if (cached) {
+      try {
+        const expiration = parseInt(await redis.ttl(key), 10);
+        const json = JSON.parse(cached);
+        const withoutUsername = {
+          ...json,
+          data: {
+            ...json.data,
+            users: json.data.users.filter(
+              ({ screen_name }) => screen_name !== username
+            ),
+          },
+        };
+        await redis.setex(key, expiration, JSON.stringify(withoutUsername));
+      } catch (exception) {
+        console.error(exception);
+      }
+    }
+
+    return data;
+  }
+
   async getUserByUsername(username?: string) {
     let params = undefined;
     if (username) {
@@ -49,7 +133,7 @@ export default class Twitter {
         screen_name: username,
       };
     }
-    const { data } = await this.get("users/lookup", params);
+    const { data } = await this.get("/users/lookup", params);
     const user = data[0];
     return parseUser(user);
   }
@@ -61,7 +145,7 @@ export default class Twitter {
       skip_status: true,
       include_user_entities: true,
     };
-    const { data } = await this.get("friends/list", params);
+    const { data } = await this.getByUser("/friends/list", params);
     // FIXME pagination is NOT handled
     // here are the attributes for data [ 'users', 'next_cursor', 'next_cursor_str', 'previous_cursor', 'previous_cursor_str', 'total_count' ]
     return data.users.map(parseUser);
@@ -75,9 +159,26 @@ export default class Twitter {
       include_rts: true,
       include_entities: true,
     };
-    const { data } = await this.get("statuses/user_timeline", params);
+    const { data } = await this.get("/statuses/user_timeline", params);
     return data.map((t) => parseTweet(t));
   }
+}
+
+export async function createTwitterFromReq(req) {
+  //oauth_token: ,
+  //oauth_token_secret: ,
+  return new Twitter({
+    oauth_token: "102964419-u84KlIMhYuofF1soXSTAq82uZpoe5DfaBSdjN5gS",
+    oauth_token_secret: "kjvS4qWISvihamU85lgGuOtsmRVWFNBGZelRzF4UU94eA",
+    userId: "1",
+  });
+}
+
+function parseList({ id_str, name }: { id_str: string; name: string }) {
+  return {
+    id: id_str,
+    name,
+  };
 }
 
 function parseTweet(tweet, overwrite = {}) {
@@ -141,11 +242,12 @@ function promisify(func) {
   };
 }
 
-function limits(headers) {
+function limits(headers: { [key: string]: string }) {
   try {
-    const formats = {
+    const formats: { [key: string]: (v: string) => string } = {
       "x-rate-limit-limit": (v) => v,
-      "x-rate-limit-reset": (v) => dayjs(parseInt(v, 10) * 1000).format(),
+      "x-rate-limit-reset": (v) =>
+        v ? dayjs(parseInt(v, 10) * 1000).format() : v,
       "x-rate-limit-remaining": (v) => v,
     };
     let output = [];

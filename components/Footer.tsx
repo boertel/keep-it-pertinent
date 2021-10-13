@@ -1,7 +1,7 @@
-import { MouseEvent, useCallback, forwardRef, useState } from "react";
+import { useEffect, useRef, useCallback, forwardRef, useState } from "react";
 import { useRouter } from "next/router";
 import cn from "classnames";
-import { Link, Dropdown } from "@/components";
+import { Dialog, Link, Dropdown } from "@/components";
 import { useShortcutIsActive, useRegisterShortcut } from "@/hooks/useShortcut";
 import useSWR, { useSWRConfig } from "swr";
 
@@ -11,28 +11,60 @@ export default function Footer() {
   const router = useRouter();
   const { username } = router.query;
 
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isUnfollowConfirmationOpen, setIsUnfollowConfirmationOpen] =
+    useState<boolean>(false);
+  const closeUnfollowConfirmation = () => setIsUnfollowConfirmationOpen(false);
   const { next, previous } = useFollowers(username);
+
   const { mutate } = useSWRConfig();
 
-  const { data: lists = [] } = useSWR("/api/twitter/lists");
+  const unfollow = useCallback(() => {
+    if (username) {
+      fetch(`/api/twitter/unfollow`, {
+        body: JSON.stringify({ username }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      mutate(
+        "/api/twitter/followers",
+        (followers) => {
+          return {
+            data: followers.data.filter((prev) => prev.username !== username),
+          };
+        },
+        false
+      );
+      if (next) {
+        router.push(`/u/${next.username}`);
+      } else {
+        router.push(`/`);
+      }
+    }
+  }, [username, router, next]);
 
-  const moveTolist = useCallback(
-    async (listId: string) => {
-      console.log(username, listId);
-      if (username) {
-        await fetch(`/api/twitter/lists/${listId}`, {
-          body: JSON.stringify({ username }),
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
+  const confirmUnfollow = useCallback(async () => {
+    const showConfirmations = JSON.parse(
+      sessionStorage.getItem("showConfirmations") || "{}"
+    );
+    if (showConfirmations.unfollow !== false) {
+      setIsUnfollowConfirmationOpen(true);
+    } else {
+      unfollow();
+    }
+  }, [setIsUnfollowConfirmationOpen, unfollow]);
+
+  useRegisterShortcut(
+    "Escape",
+    () => {
+      if (!isUnfollowConfirmationOpen) {
+        router.push("/");
       }
     },
-    [mutate, username]
+    [router, isUnfollowConfirmationOpen]
   );
 
   return (
-    <footer className="border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2">
+    <footer className="border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20">
       <h3 className="mb-4 text-center font-bold text-lg">
         Are these tweets still relevant for you?
         <Button className="py-2 border-none text-red-400" shortcut="shift+L">
@@ -54,34 +86,20 @@ export default function Footer() {
           </Button>
         )}
         <Button
-          className="pr-12 border-red-400 hover:bg-red-400 hover:bg-opacity-30"
+          className="pr-12 border-red-400 hover:bg-red-400 hover:bg-opacity-30 focus:ring-red-400"
           shortcut="shift+U"
+          onClick={confirmUnfollow}
         >
           <CommandKey shortcut="shift+U" /> U
           <NotShortcut shortcut="shift+U">n-follow</NotShortcut>
         </Button>
-        <Dropdown>
-          {({ open }) => (
-            <>
-              <Dropdown.Button
-                onClick={() => setIsOpen(true)}
-                as={Button}
-                className="pr-12 border-yellow-400 hover:bg-yellow-400 hover:bg-opacity-30"
-                shortcut="shift+M"
-              >
-                <CommandKey shortcut="shift+M" /> M
-                <NotShortcut shortcut="shift+M">ove to List</NotShortcut>
-              </Dropdown.Button>
-              <Dropdown.Items className="p-1" open={open || isOpen}>
-                {lists.map(({ id, name }) => (
-                  <Dropdown.ItemButton key={id} onClick={() => moveTolist(id)}>
-                    {name}
-                  </Dropdown.ItemButton>
-                ))}
-              </Dropdown.Items>
-            </>
-          )}
-        </Dropdown>
+        <UnfollowConfirmationDialog
+          username={username}
+          isOpen={isUnfollowConfirmationOpen}
+          onClose={closeUnfollowConfirmation}
+          onConfirm={unfollow}
+        />
+        <ListDropdown username={username} />
         {next && (
           <Button
             className="pr-12 border-green-400 hover:bg-green-400 hover:bg-opacity-30"
@@ -95,6 +113,155 @@ export default function Footer() {
         )}
       </div>
     </footer>
+  );
+}
+
+function ListDropdown({ username }: { username: string }) {
+  const [moved, setMoved] = useState<string | null>(null);
+  const button = useRef<HTMLButtonElement>();
+  const { data: lists = [] } = useSWR("/api/twitter/lists");
+
+  const moveToList = useCallback(
+    async (list) => {
+      if (username) {
+        fetch(`/api/twitter/lists/${list.id}`, {
+          body: JSON.stringify({ username }),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      setMoved(list.name);
+      if (button.current) {
+        button.current.click();
+      }
+    },
+    [username]
+  );
+
+  useEffect(() => {
+    let timeout;
+    if (moved) {
+      timeout = setTimeout(() => {
+        setMoved(null);
+      }, 2000);
+    }
+    return () => clearTimeout(timeout);
+  }, [moved]);
+
+  return (
+    <Dropdown>
+      {({ open }: { open: boolean }) => (
+        <>
+          <Dropdown.Button
+            ref={button}
+            as={Button}
+            shortcut="shift+M"
+            className="pr-12 border-yellow-400 hover:bg-yellow-400 hover:bg-opacity-30 focus:ring-yellow-400 relative"
+          >
+            <>
+              <div
+                className={cn(
+                  "absolute inset-0 flex items-center justify-center text-yellow-400 pointer-events-none opacity-0",
+                  { "opacity-100": !!moved }
+                )}
+              >
+                Moved!
+              </div>
+              <div className={cn({ invisible: !!moved })}>
+                <CommandKey shortcut="shift+M" /> M
+                <NotShortcut shortcut="shift+M">ove to List</NotShortcut>
+              </div>
+            </>
+          </Dropdown.Button>
+          <Dropdown.Items className="p-1" open={open}>
+            {lists.map((list, index) => (
+              <DropdownListItem
+                id={list.id}
+                onClick={() => {
+                  moveToList(list);
+                }}
+                name={list.name}
+                index={`${index + 1}`}
+              />
+            ))}
+          </Dropdown.Items>
+        </>
+      )}
+    </Dropdown>
+  );
+}
+
+function DropdownListItem({
+  id,
+  name,
+  index,
+  onClick,
+}: {
+  id: string;
+  name: string;
+  index: string;
+  onClick: () => void;
+}) {
+  useRegisterShortcut(index, onClick);
+
+  return (
+    <Dropdown.ItemButton
+      key={id}
+      onClick={onClick}
+      className="flex justify-between"
+    >
+      <div>{name}</div>
+      <div className="text-white text-opacity-40">{index}</div>
+    </Dropdown.ItemButton>
+  );
+}
+
+function UnfollowConfirmationDialog({ username, isOpen, onClose, onConfirm }) {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [checkbox, setCheckbox] = useState<boolean>(false);
+
+  const handleOnConfirm = async () => {
+    setIsLoading(true);
+    sessionStorage.setItem(
+      "showConfirmations",
+      JSON.stringify({ unfollow: !checkbox })
+    );
+    await onConfirm();
+    setIsLoading(false);
+    onClose();
+  };
+
+  return (
+    <Dialog isOpen={isOpen} onClose={onClose}>
+      <>
+        <Dialog.Title>Danger!</Dialog.Title>
+        <Dialog.Content>
+          <label>
+            <input
+              type="checkbox"
+              className="mr-2 focus:outline-none"
+              onChange={(evt) => setCheckbox(evt.target.checked)}
+            />{" "}
+            Don't show this warning when un-following accounts.
+          </label>
+        </Dialog.Content>
+        <Dialog.Footer>
+          <Button
+            className="border-gray-300 text-gray-300 hover:bg-gray-300 hover:bg-opacity-20  focus:ring-gray-300"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="bg-red-500 focus:bg-red-600 hover:bg-red-600 text-black focus:ring-red-500 border-none"
+            onClick={handleOnConfirm}
+            isLoading={isLoading}
+          >
+            Yes, I want to <b>un-follow</b> {username}
+          </Button>
+        </Dialog.Footer>
+      </>
+    </Dialog>
   );
 }
 
@@ -145,10 +312,11 @@ const Button = forwardRef(
     {
       className,
       children,
-      shortcut,
+      shortcut = null,
       as: AsComponent = "button",
       onClick,
       href,
+      isLoading,
       ...props
     }: {
       className?: string;
@@ -156,6 +324,7 @@ const Button = forwardRef(
       children: ReactNode;
       onClick: (evt: any) => void;
       href?: string;
+      isLoading?: boolean;
       as: any;
     },
     ref
@@ -175,12 +344,15 @@ const Button = forwardRef(
     return (
       <AsComponent
         ref={ref}
-        className={cn("border-2 px-6 py-2 rounded-md", className)}
+        className={cn(
+          "border-2 px-6 py-2 rounded-md focus:outline-none focus:ring-opacity-30 focus:ring-4",
+          className
+        )}
         onClick={onClick}
         href={href}
         {...props}
       >
-        {children}
+        {isLoading ? <>Saving...</> : children}
       </AsComponent>
     );
   }
