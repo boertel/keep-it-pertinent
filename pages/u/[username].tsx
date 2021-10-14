@@ -115,6 +115,7 @@ export default function Username() {
                 <Tweet
                   ref={index === currentIndex ? current : null}
                   key={id}
+                  id={id}
                   text={text}
                   author={author}
                   createdAt={createdAt}

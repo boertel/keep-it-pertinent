@@ -39,11 +39,7 @@ export default function Bio({
           <div className="flex flex-col">
             <h1 className="text-xxl font-bold">{name}</h1>
             <Link href={`https://twitter.com/${username}`}>
-              <a
-                className="text-gray-500"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              <a className="text-gray-500" target="_blank">
                 <h3>@{username}</h3>
               </a>
             </Link>
@@ -52,11 +48,7 @@ export default function Bio({
         <div className="flex items-center">
           {website && (
             <Link href={website.expandedUrl}>
-              <a
-                className="text-blue-500"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a className="text-blue-500" target="_blank">
                 {website.displayUrl}
               </a>
             </Link>

@@ -4,6 +4,7 @@ import tweets from "twitter-text";
 import Avatar from "./Avatar";
 import Author from "./Author";
 import Datetime from "./Datetime";
+import Link from "./Link";
 
 interface AuthorType {
   id: number;
@@ -46,6 +47,7 @@ const Tweet = forwardRef(
     }: TweetProps,
     ref
   ) => {
+    const href = `https://twitter.com/${author.username}/status/${id}`;
     return (
       <AsComponent
         key={id}
@@ -68,7 +70,14 @@ const Tweet = forwardRef(
               className="items-center"
             />
             {createdAt && (
-              <Datetime className="text-sm text-gray-500">{createdAt}</Datetime>
+              <Datetime
+                className="text-sm text-gray-500"
+                as={Link}
+                href={href}
+                target="_blank"
+              >
+                {createdAt}
+              </Datetime>
             )}
           </div>
           <div className="space-y-2">

@@ -4,10 +4,14 @@ import ms from "ms";
 export default function Datetime({
   children,
   className,
+  as = "div",
+  ...props
 }: {
   children?: string;
   className?: string;
+  as?: any;
 }) {
+  const AsComponent = as;
   if (!children) {
     return null;
   }
@@ -20,9 +24,13 @@ export default function Datetime({
     }
   }
   return (
-    <div className={className} title={dayjs(children).format("LLLL")}>
+    <AsComponent
+      className={className}
+      title={dayjs(children).format("LLLL")}
+      {...props}
+    >
       {getDatetime(children, format)}
-    </div>
+    </AsComponent>
   );
 }
 

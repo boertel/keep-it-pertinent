@@ -184,7 +184,7 @@ export async function createTwitterFromReq(req) {
   return new Twitter({
     oauth_token: twitterAccount.oauth_token,
     oauth_token_secret: twitterAccount.oauth_token_secret,
-    userId: "1",
+    userId: twitterAccount.providerAccountId,
   });
 }
 
@@ -246,7 +246,7 @@ function promisify(func) {
         if (error) {
           reject(error);
         } else {
-          console.log(limits(response.headers));
+          console.log(args[0], limits(response.headers));
           resolve({ data, response });
         }
       }
