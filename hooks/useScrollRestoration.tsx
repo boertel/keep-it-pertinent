@@ -19,7 +19,7 @@ export function ScrollRestorationProvider(props: any) {
   const { pathname } = useRouter();
 
   useEffect(() => {
-    if (onEnter.current) {
+    if (onEnter.current && page.current === pathname) {
       onEnter.current(store.current);
     }
   }, [pathname]);
