@@ -29,8 +29,8 @@ export default function Avatar({
   return (
     <div
       className={cn(
-        "z-20 w-12 h-12 flex-shrink-0 border-2 border-gray-400 rounded-full",
-        className
+        className,
+        "z-20 w-12 h-12 flex-shrink-0 border-2 rounded-full transition-colors"
       )}
     >
       <img

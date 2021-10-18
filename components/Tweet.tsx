@@ -57,7 +57,9 @@ const Tweet = forwardRef(
       >
         <Avatar
           src={author.avatar}
-          className={cn("mr-4", { "border-none w-8 h-8 mr-2": isRetweet })}
+          className={cn("mr-4 border-gray-400", {
+            "border-none w-8 h-8 mr-2": isRetweet,
+          })}
         />
         <div className="flex flex-col flex-grow">
           <div

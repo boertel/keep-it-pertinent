@@ -71,7 +71,13 @@ export default function Home() {
                   "flex p-2 items-center space-x-4 no-underline rounded-md outline-none"
                 )}
               >
-                <Avatar src={avatar} />
+                <Avatar
+                  src={avatar}
+                  className={cn(
+                    "focus:border-blue-600 hover:border-blue-600",
+                    navIndex === index ? "border-blue-600" : "border-gray-400"
+                  )}
+                />
                 <Author
                   username={username}
                   name={name}
@@ -90,7 +96,7 @@ function Highlight({ follow }: { follow: HTMLAnchorElement | null }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const lastAt = useRef<number>(0);
 
-  const ms = 300;
+  const ms = 150;
   let transitions = ["opacity .2s ease-in-out", `top ${ms}ms ease-in-out`];
 
   useLayoutEffect(() => {
