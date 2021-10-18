@@ -1,13 +1,22 @@
 import client from "@/redis";
 
+interface CacheOptions {
+  expiration?: number;
+  params?: any;
+}
+
 class Cache {
-  constructor(prefix: string, options = {}) {
+  _client: any;
+  _prefix: string;
+  _expiration?: number;
+
+  constructor(prefix: string, options: CacheOptions = {}) {
     this._client = client;
     this._prefix = prefix;
     this._expiration = options.expiration;
   }
 
-  key(key) {
+  key(key: string) {
     return `${this._prefix}:${key}`;
   }
 
@@ -26,7 +35,7 @@ class Cache {
         try {
           this.set(key, cached);
         } catch (exception) {
-          debug("cache")(exception);
+          console.error(exception);
         }
       }
       return cached;
@@ -49,7 +58,7 @@ class Cache {
     });
   }
 
-  async set(key: string, value, expiration) {
+  async set(key: string, value: any, expiration?: number) {
     expiration = expiration || this._expiration;
     const _value = JSON.stringify(value);
     const _key = this.key(key);
@@ -73,9 +82,9 @@ class Cache {
   }
 }
 
-Cache.serializeKey = function (args) {
+Cache.serializeKey = function (args: any) {
   return args
-    .map((arg) => {
+    .map((arg: any) => {
       if (typeof arg === "object") {
         return JSON.stringify(arg);
       }
@@ -84,7 +93,7 @@ Cache.serializeKey = function (args) {
     .join(":");
 };
 
-export const cache = (key, options) => (func) => {
+export const cache = (key: string, options: CacheOptions) => (func) => {
   // decorator so we don't have to create cache instance
   // usage:
   //  cache("<my key>", { expiration: <seconds>, params: (args) => [args[0], args[1]].join(':') })(myFunctionToCache)
