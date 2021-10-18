@@ -3,13 +3,7 @@ import { NextSeo } from "next-seo";
 
 import Link from "next/link";
 import { Author, Avatar } from "@/components";
-import {
-  useState,
-  useRef,
-  useEffect,
-  useLayoutEffect,
-  useCallback,
-} from "react";
+import { useState, useRef, useLayoutEffect, useCallback } from "react";
 
 import { useOnLeave, useOnEnter } from "@/hooks/useScrollRestoration";
 import { useRegisterShortcut } from "@/hooks/useShortcut";
@@ -56,8 +50,12 @@ export default function Home() {
 
   return (
     <div className="max-w-prose mx-auto w-full">
-      <NextSeo title="Kip" />
-      <h1 className="text-[4.8rem] leading-none font-black mt-6 mb-16">Kip</h1>
+      <NextSeo title="Keep it pertinent" />
+      <h1 className="text-[4.8rem] leading-none font-black mt-6 mb-16 text-opacity-10 text-white">
+        <span className="text-white">K</span>eep{" "}
+        <span className="text-white">i</span>t{" "}
+        <span className="text-white">p</span>ertinent
+      </h1>
       <ul className="space-y-2 relative">
         <Highlight follow={ref.current} />
         {followers?.data.map(({ id, name, username, avatar }, index) => (
