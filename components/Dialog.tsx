@@ -56,7 +56,7 @@ function Dialog({
   );
 }
 
-Dialog.Title = (props) => {
+Dialog.Title = (props: any) => {
   return (
     <HeadlessDialog.Title
       as="h3"
@@ -66,7 +66,7 @@ Dialog.Title = (props) => {
   );
 };
 
-Dialog.Content = (props) => {
+Dialog.Content = (props: any) => {
   return (
     <div className="mt-8">
       <p className="text-sm text-white" {...props} />
@@ -74,7 +74,7 @@ Dialog.Content = (props) => {
   );
 };
 
-Dialog.Footer = (props) => {
+Dialog.Footer = (props: any) => {
   return (
     <div
       className="mt-6 flex flex-row justify-end space-x-2 flex-wrap"

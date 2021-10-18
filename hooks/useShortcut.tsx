@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   useState,
   useRef,
@@ -188,12 +189,12 @@ export function useShortcut() {
 }
 
 export function useRegisterShortcut(
-  combination: string | null,
-  callback: () => void,
-  dependencies = []
+  combination: string | null | undefined,
+  callback: any,
+  dependencies?: any
 ) {
   const { register, unregister, hints } = useShortcut();
-  const memoed = useCallback(callback, dependencies);
+  const memoed = useCallback(callback, dependencies || []);
 
   useEffect(() => {
     register(combination, memoed);

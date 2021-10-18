@@ -1,7 +1,14 @@
+// @ts-nocheck
 import dayjs from "@/dayjs";
 import cn from "classnames";
 
-export default function Suggestions({ tweets, className }) {
+export default function Suggestions({
+  tweets,
+  className,
+}: {
+  tweets: any[];
+  className?: string;
+}) {
   let suggestions = [];
   const lastTweet = tweets[0];
   if (lastTweet && dayjs().diff(lastTweet.createdAt, "year") >= 1) {
@@ -28,7 +35,7 @@ export default function Suggestions({ tweets, className }) {
     );
   }
   let previous: any;
-  let diffs = [];
+  let diffs: number[] = [];
   tweets.forEach((tweet, index: number) => {
     if (previous) {
       diffs.push(dayjs(previous.createdAt).diff(tweet.createdAt, "seconds"));
@@ -56,16 +63,16 @@ export default function Suggestions({ tweets, className }) {
   ) : null;
 }
 
-export function duration(seconds) {
-  let output = [];
-  let remainder = seconds;
-  const durations = [
+export function duration(seconds: number): number[] {
+  let output: number[] = [];
+  let remainder: number = seconds;
+  const durations: number[] = [
     // Number of seconds in
     24 * 60 * 60, // a day
     60 * 60, // a hour
     1 * 60, // a minute
   ];
-  durations.forEach((divisor, index) => {
+  durations.forEach((divisor: number, index: number) => {
     const quotient: number = Math.abs(parseInt(`${remainder / divisor}`, 10));
     remainder = Math.abs(remainder % divisor);
     output.push(Math.floor(quotient));
@@ -76,7 +83,7 @@ export function duration(seconds) {
   return output.reverse();
 }
 
-function pad(value) {
+function pad(value: number): string {
   let s = String(value);
   while (s.length < 2) {
     s = "0" + s;
@@ -84,9 +91,10 @@ function pad(value) {
   return s;
 }
 
-const defaultFormat = (value, key) =>
+const defaultFormat = (value: number, key: string): string =>
   `${value} ${value === 1 ? key : `${key}s`}`;
-const defaultSeparator = (index, length) => {
+
+const defaultSeparator = (index: number, length: number): string => {
   if (index === 0) {
     return "";
   }
@@ -97,7 +105,13 @@ const defaultSeparator = (index, length) => {
   }
 };
 
-export function formatDuration(seconds, options = {}) {
+interface DurationOptions {
+  ignoreZero?: boolean;
+  format?: any;
+  separator?: any;
+  intervals?: string[];
+}
+export function formatDuration(seconds: number, options: DurationOptions = {}) {
   options = {
     ignoreZero: true,
     format: defaultFormat,
@@ -111,7 +125,7 @@ export function formatDuration(seconds, options = {}) {
   const parts = duration(seconds).reverse();
 
   const output = parts
-    .map((part, index) => {
+    .map((part, index: number) => {
       const interval = intervals[index];
       return interval ? format(part, interval) : null;
     })

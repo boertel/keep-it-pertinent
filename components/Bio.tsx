@@ -4,8 +4,8 @@ import cn from "classnames";
 import Avatar from "./Avatar";
 
 interface ExpendableUrl {
-  display_url: string;
-  expanded_url: string;
+  displayUrl: string;
+  expandedUrl: string;
 }
 
 interface BioProps {

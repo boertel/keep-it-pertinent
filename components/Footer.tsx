@@ -1,5 +1,12 @@
-import { useEffect, useRef, useCallback, forwardRef, useState } from "react";
-import { useRouter } from "next/router";
+import {
+  useEffect,
+  useRef,
+  useCallback,
+  forwardRef,
+  useState,
+  ReactNode,
+} from "react";
+import { useRouter, NextRouter } from "next/router";
 import cn from "classnames";
 import { Dialog, Link, Dropdown } from "@/components";
 import { useShortcutIsActive, useRegisterShortcut } from "@/hooks/useShortcut";
@@ -8,13 +15,16 @@ import useSWR, { useSWRConfig } from "swr";
 import { useFollowers } from "./Followers";
 
 export default function Footer() {
-  const router = useRouter();
+  const router: NextRouter = useRouter();
   const { username } = router.query;
 
   const [isUnfollowConfirmationOpen, setIsUnfollowConfirmationOpen] =
     useState<boolean>(false);
   const closeUnfollowConfirmation = () => setIsUnfollowConfirmationOpen(false);
-  const { next, previous } = useFollowers(username);
+  const { next, previous } = useFollowers(username) as {
+    next: any;
+    previous: any;
+  };
 
   const { mutate } = useSWRConfig();
 
@@ -27,9 +37,11 @@ export default function Footer() {
       });
       mutate(
         "/api/twitter/followers",
-        (followers) => {
+        (followers: any) => {
           return {
-            data: followers.data.filter((prev) => prev.username !== username),
+            data: followers.data.filter(
+              (prev: any) => prev.username !== username
+            ),
           };
         },
         false
@@ -112,7 +124,7 @@ export default function Footer() {
   );
 }
 
-function Favorite({ username }) {
+function Favorite({ username }: { username?: string | string[] }) {
   const [favorited, setFavorited] = useState<boolean>(false);
 
   const moveToFavorite = useCallback(async () => {
@@ -127,7 +139,7 @@ function Favorite({ username }) {
   }, [username]);
 
   useEffect(() => {
-    let timeout;
+    let timeout: ReturnType<typeof setTimeout>;
     if (favorited) {
       timeout = setTimeout(() => {
         setFavorited(false);
@@ -157,7 +169,7 @@ function Favorite({ username }) {
   );
 }
 
-function ListDropdown({ username }: { username: string }) {
+function ListDropdown({ username }: { username?: string | string[] }) {
   const [moved, setMoved] = useState<string | null>(null);
   const button = useRef<HTMLButtonElement>();
   const { data: lists = [] } = useSWR("/api/twitter/lists");
@@ -180,7 +192,7 @@ function ListDropdown({ username }: { username: string }) {
   );
 
   useEffect(() => {
-    let timeout;
+    let timeout: ReturnType<typeof setTimeout>;
     if (moved) {
       timeout = setTimeout(() => {
         setMoved(null);
@@ -214,8 +226,8 @@ function ListDropdown({ username }: { username: string }) {
               </div>
             </>
           </Dropdown.Button>
-          <Dropdown.Items className="p-1" open={open}>
-            {lists.map((list, index) => (
+          <Dropdown.Items open={open}>
+            {lists.map((list: any, index: number) => (
               <DropdownListItem
                 key={list.id}
                 id={list.id}
@@ -258,7 +270,17 @@ function DropdownListItem({
   );
 }
 
-function UnfollowConfirmationDialog({ username, isOpen, onClose, onConfirm }) {
+function UnfollowConfirmationDialog({
+  username,
+  isOpen,
+  onClose,
+  onConfirm,
+}: {
+  username?: string | string[];
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [checkbox, setCheckbox] = useState<boolean>(false);
 
@@ -314,9 +336,11 @@ function CommandKey({ shortcut }: { shortcut: string }) {
 function Shortcut({
   className,
   shortcut,
+  children,
   ...props
 }: {
   className?: any;
+  children: ReactNode;
   shortcut: string;
 }) {
   const isActive = useShortcutIsActive(shortcut);
@@ -333,9 +357,13 @@ function Shortcut({
 function NotShortcut({
   className,
   shortcut,
+  children,
+  style,
   ...props
 }: {
   className?: any;
+  children: ReactNode;
+  style?: any;
   shortcut: string;
 }) {
   const isActive = useShortcutIsActive(shortcut);
@@ -354,7 +382,7 @@ const Button = forwardRef(
     {
       className,
       children,
-      shortcut = null,
+      shortcut,
       as: AsComponent = "button",
       onClick,
       href,
@@ -364,10 +392,10 @@ const Button = forwardRef(
       className?: string;
       shortcut?: string;
       children: ReactNode;
-      onClick: (evt: any) => void;
+      onClick?: (evt: any) => void;
       href?: string;
       isLoading?: boolean;
-      as: any;
+      as?: any;
     },
     ref
   ) => {
@@ -376,7 +404,7 @@ const Button = forwardRef(
       (evt: any) => {
         if (href) {
           return router.push(href);
-        } else {
+        } else if (onClick) {
           onClick(evt);
         }
       },

@@ -1,6 +1,10 @@
 import { createTwitterFromReq } from "@/twitter";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function unfollow(req, res) {
+export default async function unfollow(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const t = await createTwitterFromReq(req);
 
   const list = await t.getOrCreateList("Kip Archive");

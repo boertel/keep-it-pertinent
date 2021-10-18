@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { forwardRef } from "react";
 import cn from "classnames";
 import tweets from "twitter-text";

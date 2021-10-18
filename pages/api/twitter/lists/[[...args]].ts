@@ -1,6 +1,7 @@
 import { createTwitterFromReq } from "@/twitter";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function list(req, res) {
+export default async function list(req: NextApiRequest, res: NextApiResponse) {
   const { args } = req.query;
 
   const t = await createTwitterFromReq(req);

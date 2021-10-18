@@ -19,9 +19,9 @@ export function FollowersProvider(props: any) {
   const { data: followers } = useSWR("/api/twitter/followers");
 
   const next = useCallback(
-    (currentUsername?: string) => {
+    (currentUsername?: string | string[]) => {
       const currentIndex = followers?.data.findIndex(
-        ({ username }) => username === currentUsername
+        ({ username }: { username: string }) => username === currentUsername
       );
       const nextUsername = followers?.data[currentIndex + 1];
       return nextUsername;
@@ -30,9 +30,9 @@ export function FollowersProvider(props: any) {
   );
 
   const previous = useCallback(
-    (currentUsername?: string) => {
+    (currentUsername?: string | string[]) => {
       const currentIndex = followers?.data.findIndex(
-        ({ username }) => username === currentUsername
+        ({ username }: { username: string }) => username === currentUsername
       );
       const previousUsername = followers?.data[currentIndex - 1];
       return previousUsername;
@@ -56,7 +56,10 @@ export function useFollowers(
 ): FollowersReturn {
   const { followers, next, previous } = useContext(
     FollowersContext
-  ) as FollowersReturn;
+  ) as FollowersReturn & {
+    next: (username?: string | string[]) => any;
+    previous: (username?: string | string[]) => any;
+  };
   return useMemo(
     () => ({
       followers,

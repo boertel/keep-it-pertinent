@@ -1,6 +1,8 @@
 import dayjs from "@/dayjs";
 import ms from "ms";
 
+type DatetimeFormatValue = string | ((str: string) => string);
+
 export default function Datetime({
   children,
   className,
@@ -15,7 +17,7 @@ export default function Datetime({
   if (!children) {
     return null;
   }
-  let format: string = "MMM DD, YYYY";
+  let format: DatetimeFormatValue = "MMM DD, YYYY";
   const diff = dayjs().diff(children);
   for (const [key, value] of formats) {
     if (diff < key) {
@@ -34,7 +36,7 @@ export default function Datetime({
   );
 }
 
-function getDatetime(str, format) {
+function getDatetime(str: string, format: DatetimeFormatValue) {
   if (typeof format === "function") {
     return format(str);
   } else {
@@ -42,6 +44,7 @@ function getDatetime(str, format) {
   }
 }
 
-const formats = new Map();
+const formats = new Map<number, DatetimeFormatValue>();
+
 formats.set(ms("1d"), (str) => dayjs(str).fromNow());
 formats.set(ms("130d"), "MMM DD");

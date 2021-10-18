@@ -1,8 +1,12 @@
 import { Menu, Transition } from "@headlessui/react";
 import cn from "classnames";
-import { forwardRef, Fragment } from "react";
+import { forwardRef, ReactNode, Fragment } from "react";
 
-export default function Dropdown({ children }) {
+export default function Dropdown({
+  children,
+}: {
+  children: (...arg: any[]) => ReactNode;
+}) {
   return (
     <Menu as="div" className="relative inline-block text-left">
       {({ open }) => {
@@ -12,7 +16,7 @@ export default function Dropdown({ children }) {
   );
 }
 
-function Items({ children, className, open }) {
+function Items({ children, open }: { children: ReactNode; open: boolean }) {
   return (
     <Transition
       show={open}
@@ -34,11 +38,30 @@ function Items({ children, className, open }) {
   );
 }
 
-const Button = forwardRef(({ as, ...props }, ref) => {
-  return <Menu.Button ref={ref} as={as} {...props} />;
-});
+const Button = forwardRef(
+  (
+    {
+      as,
+      children,
+      shortcut,
+      className,
+      ...props
+    }: { as?: any; children: ReactNode; shortcut?: string; className?: string },
+    ref
+  ) => {
+    return (
+      <Menu.Button
+        ref={ref}
+        as={as}
+        shortcut={shortcut}
+        className={className}
+        {...props}
+      />
+    );
+  }
+);
 
-function ItemInput(props) {
+function ItemInput(props: any) {
   return (
     <Menu.Item>
       {({ active }) => (
@@ -53,7 +76,16 @@ function ItemInput(props) {
   );
 }
 
-function ItemButton({ children, onClick, className, ...props }) {
+function ItemButton({
+  children,
+  onClick,
+  className,
+  ...props
+}: {
+  children: ReactNode;
+  onClick: (evt: any) => void;
+  className?: string;
+}) {
   return (
     <Menu.Item>
       {({ active }) => (

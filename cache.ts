@@ -10,6 +10,8 @@ class Cache {
   _prefix: string;
   _expiration?: number;
 
+  static serializeKey: (...args: any[]) => string;
+
   constructor(prefix: string, options: CacheOptions = {}) {
     this._client = client;
     this._prefix = prefix;
@@ -20,20 +22,20 @@ class Cache {
     return `${this._prefix}:${key}`;
   }
 
-  wrap(func, params = Cache.serializeKey) {
+  wrap(func: any, params = Cache.serializeKey) {
+    const self: any = this;
     // shortcut to cache a function result with its arguments being the key
-    const wrapped = async function () {
-      const args = Array.from(arguments);
+    const wrapped = async function (...args: any[]) {
       const key = params(args);
-      let cached = await this.get(key);
+      let cached = await self.get(key);
       if (!cached) {
         try {
-          cached = await func.apply(this, args);
+          cached = await func.apply(self, args);
         } catch (exception) {
           throw exception;
         }
         try {
-          this.set(key, cached);
+          self.set(key, cached);
         } catch (exception) {
           console.error(exception);
         }
@@ -45,8 +47,8 @@ class Cache {
   }
 
   async get(key: string) {
-    return new Promise((resolve, reject) => {
-      this._client.get(this.key(key), (err, reply) => {
+    return new Promise<void>((resolve, reject) => {
+      this._client.get(this.key(key), (err: any, reply: string) => {
         if (err) {
           return reject(err);
         }
@@ -71,8 +73,8 @@ class Cache {
   }
 
   del(key: string) {
-    return new Promise((resolve, reject) => {
-      this._client.del(this.key(key), (err, count) => {
+    return new Promise<number>((resolve, reject) => {
+      this._client.del(this.key(key), (err: any, count: number) => {
         if (err) {
           return reject(err);
         }
@@ -93,7 +95,7 @@ Cache.serializeKey = function (args: any) {
     .join(":");
 };
 
-export const cache = (key: string, options: CacheOptions) => (func) => {
+export const cache = (key: string, options: CacheOptions) => (func: any) => {
   // decorator so we don't have to create cache instance
   // usage:
   //  cache("<my key>", { expiration: <seconds>, params: (args) => [args[0], args[1]].join(':') })(myFunctionToCache)

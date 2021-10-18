@@ -1,13 +1,20 @@
 import cn from "classnames";
 import { useEffect, useState, useRef } from "react";
 
-function useImageOnLoad(src: string | null): boolean {
+interface Window {
+  Image: {
+    prototype: HTMLImageElement;
+    new (): HTMLImageElement;
+  };
+}
+
+function useImageOnLoad(src?: string): boolean {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const img = useRef<typeof Image | null>(null);
+  const img = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
-    img.current = new Image();
-    if (img.current) {
+    img.current = new window.Image();
+    if (img.current && src) {
       img.current.onload = () => {
         setIsLoaded(true);
       };

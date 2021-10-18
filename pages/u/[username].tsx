@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useRouter } from "next/router";
 import cn from "classnames";
 import { NextSeo } from "next-seo";

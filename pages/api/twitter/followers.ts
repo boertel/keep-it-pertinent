@@ -1,6 +1,10 @@
 import { createTwitterFromReq } from "@/twitter";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function followers(req, res) {
+export default async function followers(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const t = await createTwitterFromReq(req);
 
   const data = await t.getFollowedUsers();

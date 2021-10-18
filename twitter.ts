@@ -1,3 +1,4 @@
+// @ts-nocheck
 import OtherTwitter from "twitter";
 import db from "@/db";
 import Cookies from "cookies";
@@ -8,6 +9,7 @@ import { TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET } from "@/config";
 
 export default class Twitter {
   userId: string;
+  client: any;
 
   constructor({
     oauth_token,
