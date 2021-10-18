@@ -66,7 +66,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20">
       <h3 className="mb-4 text-center font-bold text-lg">
-        Are these tweets still relevant to you?
+        Are these tweets still pertinent to you?
         <Favorite username={username} />
       </h3>
       <div className="flex items-center justify-center space-x-3 flex-wrap">

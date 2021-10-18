@@ -56,10 +56,8 @@ export default function Home() {
 
   return (
     <div className="max-w-prose mx-auto w-full">
-      <NextSeo title="Expiration" />
-      <h1 className="text-[4.8rem] leading-none font-black mt-6 mb-16">
-        Expiration
-      </h1>
+      <NextSeo title="Kip" />
+      <h1 className="text-[4.8rem] leading-none font-black mt-6 mb-16">Kip</h1>
       <ul className="space-y-2 relative">
         <Highlight follow={ref.current} />
         {followers?.data.map(({ id, name, username, avatar }, index) => (
