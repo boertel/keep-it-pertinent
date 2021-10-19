@@ -350,7 +350,9 @@ function Shortcut({
         "opacity-100": isActive,
       })}
       {...props}
-    />
+    >
+      {children}
+    </span>
   );
 }
 
@@ -373,7 +375,9 @@ function NotShortcut({
         "opacity-20": isActive,
       })}
       {...props}
-    />
+    >
+      {children}
+    </span>
   );
 }
 

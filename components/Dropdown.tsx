@@ -56,7 +56,9 @@ const Button = forwardRef(
         shortcut={shortcut}
         className={className}
         {...props}
-      />
+      >
+        {children}
+      </Menu.Button>
     );
   }
 );
