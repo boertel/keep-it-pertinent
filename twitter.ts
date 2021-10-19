@@ -185,6 +185,7 @@ export async function createTwitterFromReq(req) {
   if (!sessionToken) {
     throw new UnauthorizedError();
   }
+  // FIXME `some` is dangerous since it will return other users
   const user = await db.user.findFirst({
     where: {
       sessions: { some: { sessionToken } },
