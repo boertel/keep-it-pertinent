@@ -13,4 +13,9 @@ export default NextAuth({
       clientSecret: process.env.TWITTER_CLIENT_SECRET,
     }),
   ],
+  callbacks: {
+    redirect() {
+      return "/";
+    },
+  },
 });

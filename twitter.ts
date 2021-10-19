@@ -168,9 +168,21 @@ export default class Twitter {
   }
 }
 
+export class HttpError extends Error {
+  statusCode: number;
+  message: string;
+}
+class UnauthorizedError extends HttpError {
+  statusCode: number = 401;
+  message: string = "Unauthorized";
+}
+
 export async function createTwitterFromReq(req) {
   const cookies = new Cookies(req);
   const sessionToken = cookies.get("next-auth.session-token");
+  if (!sessionToken) {
+    throw new UnauthorizedError();
+  }
   const user = await db.user.findFirst({
     where: {
       sessions: { some: { sessionToken } },
@@ -183,6 +195,9 @@ export async function createTwitterFromReq(req) {
   const twitterAccount = user.accounts.find(
     ({ provider }) => provider === "twitter"
   );
+  if (!twitterAccount) {
+    throw new UnauthorizedError();
+  }
   return new Twitter({
     oauth_token: twitterAccount.oauth_token,
     oauth_token_secret: twitterAccount.oauth_token_secret,

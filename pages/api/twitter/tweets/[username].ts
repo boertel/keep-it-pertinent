@@ -6,8 +6,14 @@ export default async function tweets(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const t = await createTwitterFromReq(req);
+  try {
+    const t = await createTwitterFromReq(req);
 
-  const data = await t.getTweetsByUsername(req.query.username);
-  return res.status(200).json({ data });
+    const data = await t.getTweetsByUsername(req.query.username);
+    return res.status(200).json({ data });
+  } catch (exception: any) {
+    return res
+      .status(exception.statusCode)
+      .json({ message: exception.message });
+  }
 }

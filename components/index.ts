@@ -8,3 +8,4 @@ export { default as Link } from "./Link";
 export { default as Suggestions } from "./Suggestions";
 export { default as Tweet } from "./Tweet";
 export { default as Dialog } from "./Dialog";
+export { default as Title } from "./Title";

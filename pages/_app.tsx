@@ -1,21 +1,31 @@
 import "../styles/global.css";
+import { NextSeo } from "next-seo";
 import cn from "classnames";
 import { SWRConfig } from "swr";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import type { AppProps } from "next/app";
 import { ShortcutProvider, useShortcutIsActive } from "@/hooks/useShortcut";
 import { ScrollRestorationProvider } from "@/hooks/useScrollRestoration";
 import { FollowersProvider } from "../components/Followers";
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
   return (
     <SWRConfig
       value={{
         revalidateOnFocus: false,
         fetcher: (resource, init) =>
-          fetch(resource, init).then((res) => res.json()),
+          fetch(resource, init).then((res) => {
+            if (res.ok) {
+              return res.json();
+            } else if (res.status === 401) {
+              router.push(`/auth/login?next=${router.asPath}`);
+            }
+          }),
       }}
     >
+      <NextSeo title="Keep it pertinent" />
       <FollowersProvider>
         <ScrollRestorationProvider>
           <ShortcutProvider>
