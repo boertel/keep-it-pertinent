@@ -179,7 +179,9 @@ class UnauthorizedError extends HttpError {
 
 export async function createTwitterFromReq(req) {
   const cookies = new Cookies(req);
-  const sessionToken = cookies.get("next-auth.session-token");
+  const sessionToken =
+    cookies.get("next-auth.session-token") ||
+    cookies.get("__Secure-next-auth.session-token");
   if (!sessionToken) {
     throw new UnauthorizedError();
   }
