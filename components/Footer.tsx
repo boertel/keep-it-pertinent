@@ -93,7 +93,7 @@ export default function Footer() {
         Are these tweets still pertinent to you?
         <Favorite
           username={username}
-          isFavorite={username && favorites[username]}
+          isFavorite={username ? favorites[username] : false}
         />
       </h3>
       <div className="flex items-center justify-center space-x-3 flex-wrap">
