@@ -10,13 +10,23 @@ import { useRouter, NextRouter } from "next/router";
 import cn from "classnames";
 import { Dialog, Link, Dropdown } from "@/components";
 import { useShortcutIsActive, useRegisterShortcut } from "@/hooks/useShortcut";
-import useSWR, { useSWRConfig } from "swr";
+import { useSWRConfig } from "swr";
+import { useLists } from "@/hooks";
 
 import { useFollowers } from "./Followers";
 
-export default function Footer() {
+function useCurrentUsername(): string | undefined {
   const router: NextRouter = useRouter();
   const { username } = router.query;
+  if (Array.isArray(username)) {
+    return username[0];
+  }
+  return username;
+}
+
+export default function Footer() {
+  const router: NextRouter = useRouter();
+  const username = useCurrentUsername();
 
   const [isUnfollowConfirmationOpen, setIsUnfollowConfirmationOpen] =
     useState<boolean>(false);
@@ -25,6 +35,8 @@ export default function Footer() {
     next: any;
     previous: any;
   };
+
+  const { favorites } = useLists();
 
   const { mutate } = useSWRConfig();
 
@@ -79,7 +91,10 @@ export default function Footer() {
     <footer className="border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20">
       <h3 className="mb-4 text-center font-bold text-lg">
         Are these tweets still pertinent to you?
-        <Favorite username={username} />
+        <Favorite
+          username={username}
+          isFavorite={username && favorites[username]}
+        />
       </h3>
       <div className="flex items-center justify-center space-x-3 flex-wrap">
         {previous && (
@@ -124,7 +139,13 @@ export default function Footer() {
   );
 }
 
-function Favorite({ username }: { username?: string | string[] }) {
+function Favorite({
+  username,
+  isFavorite,
+}: {
+  username?: string | string[];
+  isFavorite: boolean;
+}) {
   const [favorited, setFavorited] = useState<boolean>(false);
 
   const moveToFavorite = useCallback(async () => {
@@ -163,7 +184,7 @@ function Favorite({ username }: { username?: string | string[] }) {
         }}
         className={cn("inline-block", { "animate-ping": favorited })}
       >
-        ❤️
+        {isFavorite ? <>💔</> : <>❤️ </>}
       </NotShortcut>
     </Button>
   );
@@ -172,7 +193,7 @@ function Favorite({ username }: { username?: string | string[] }) {
 function ListDropdown({ username }: { username?: string | string[] }) {
   const [moved, setMoved] = useState<string | null>(null);
   const button = useRef<HTMLButtonElement>();
-  const { data: lists = [] } = useSWR("/api/twitter/lists");
+  const { lists } = useLists();
 
   const moveToList = useCallback(
     async (list) => {
@@ -284,13 +305,13 @@ function UnfollowConfirmationDialog({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [checkbox, setCheckbox] = useState<boolean>(false);
 
-  const handleOnConfirm = async () => {
+  const handleOnConfirm = () => {
     setIsLoading(true);
     sessionStorage.setItem(
       "showConfirmations",
       JSON.stringify({ unfollow: !checkbox })
     );
-    await onConfirm();
+    onConfirm();
     setIsLoading(false);
     onClose();
   };

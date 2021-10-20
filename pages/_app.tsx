@@ -10,6 +10,7 @@ import { ShortcutProvider, useShortcutIsActive } from "@/hooks/useShortcut";
 import { ScrollRestorationProvider } from "@/hooks/useScrollRestoration";
 import { FollowersProvider } from "../components/Followers";
 import { Logo } from "@/components";
+import { ListsProvider } from "../hooks/useLists";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -32,22 +33,24 @@ export default function App({ Component, pageProps }: AppProps) {
       </Head>
       <NextSeo title="Keep it pertinent" />
       <FollowersProvider>
-        <ScrollRestorationProvider>
-          <ShortcutProvider>
-            <header className="sticky top-0 max-w-prose mx-auto relative">
-              <div className="absolute top-0 right-full py-6 px-4 mt-[12px]">
-                <Link href="/">
-                  <a className="no-underline">
-                    <LogoOnEscape />
-                  </a>
-                </Link>
-              </div>
-            </header>
-            <main className="dark:bg-black min-h-screen flex flex-col">
-              <Component {...pageProps} />
-            </main>
-          </ShortcutProvider>
-        </ScrollRestorationProvider>
+        <ListsProvider>
+          <ScrollRestorationProvider>
+            <ShortcutProvider>
+              <header className="sticky top-0 max-w-prose mx-auto relative">
+                <div className="absolute top-0 right-full py-6 px-4 mt-[12px]">
+                  <Link href="/">
+                    <a className="no-underline">
+                      <LogoOnEscape />
+                    </a>
+                  </Link>
+                </div>
+              </header>
+              <main className="dark:bg-black min-h-screen flex flex-col">
+                <Component {...pageProps} />
+              </main>
+            </ShortcutProvider>
+          </ScrollRestorationProvider>
+        </ListsProvider>
       </FollowersProvider>
     </SWRConfig>
   );

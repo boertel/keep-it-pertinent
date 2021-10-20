@@ -74,6 +74,19 @@ export default class Twitter {
     return data.map(parseList);
   }
 
+  async getListMembers(listId: string) {
+    const { data } = await this.getByUser("/lists/members", {
+      include_entities: false,
+      skip_status: true,
+      list_id: listId,
+    });
+    const members: { [key: string]: boolean } = {};
+    data.users.forEach(({ screen_name }) => {
+      members[screen_name] = true;
+    });
+    return members;
+  }
+
   async getOrCreateList(name: string, mode?: string) {
     const lists = await this.getLists();
     const existingList = lists.find((list) => list.name === name);
@@ -208,10 +221,19 @@ export async function createTwitterFromReq(req) {
   });
 }
 
-function parseList({ id_str, name }: { id_str: string; name: string }) {
+function parseList({
+  id_str,
+  name,
+  screen_name,
+}: {
+  id_str: string;
+  name: string;
+  screen_name: string;
+}) {
   return {
     id: id_str,
     name,
+    screen_name,
   };
 }
 
