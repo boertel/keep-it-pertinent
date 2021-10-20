@@ -142,9 +142,9 @@ export default class Twitter {
     return parseUser(user);
   }
 
-  async getFollowedUsers() {
+  async getFollowedUsers({ cursor = -1 }: { cursor?: number }) {
     const params = {
-      cursor: -1,
+      cursor,
       count: 200,
       skip_status: true,
       include_user_entities: true,
@@ -233,8 +233,8 @@ function parseTweet(tweet, overwrite = {}) {
   if (!!tweet.quoted_status) {
     output.retweet = parseTweet(tweet.quoted_status);
   }
-  if (tweet.entities?.media) {
-    output.media = tweet.entities.media.map((m) => ({
+  if (tweet.extended_entities?.media) {
+    output.media = tweet.extended_entities.media.map((m) => ({
       id: m.id_str,
       url: m.media_url_https,
     }));
@@ -266,7 +266,7 @@ function promisify(func) {
         if (error) {
           reject(error);
         } else {
-          console.log(args[0], limits(response.headers));
+          console.log(limits(response.headers), args[0]);
           resolve({ data, response });
         }
       }

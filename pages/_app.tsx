@@ -1,5 +1,6 @@
 import "../styles/global.css";
 import { NextSeo } from "next-seo";
+import Head from "next/head";
 import cn from "classnames";
 import { SWRConfig } from "swr";
 import Link from "next/link";
@@ -8,6 +9,7 @@ import type { AppProps } from "next/app";
 import { ShortcutProvider, useShortcutIsActive } from "@/hooks/useShortcut";
 import { ScrollRestorationProvider } from "@/hooks/useScrollRestoration";
 import { FollowersProvider } from "../components/Followers";
+import { Logo } from "@/components";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -25,15 +27,18 @@ export default function App({ Component, pageProps }: AppProps) {
           }),
       }}
     >
+      <Head>
+        <link rel="shortcut icon" href="/favicon.svg" />
+      </Head>
       <NextSeo title="Keep it pertinent" />
       <FollowersProvider>
         <ScrollRestorationProvider>
           <ShortcutProvider>
             <header className="sticky top-0 max-w-prose mx-auto relative">
-              <div className="absolute top-0 right-full py-6 px-4 mt-[22px]">
+              <div className="absolute top-0 right-full py-6 px-4 mt-[12px]">
                 <Link href="/">
                   <a className="no-underline">
-                    <Logo />
+                    <LogoOnEscape />
                   </a>
                 </Link>
               </div>
@@ -48,11 +53,16 @@ export default function App({ Component, pageProps }: AppProps) {
   );
 }
 
-function Logo() {
+function LogoOnEscape() {
   const isActive = useShortcutIsActive("Escape");
   return (
-    <div className="text-4xl hover:animate-pulse flex flex-col justify-center items-center">
-      <div>🗑</div>
+    <div className="text-6xl flex flex-col justify-center items-center">
+      <div>
+        <Logo
+          className="filter grayscale hover:grayscale-0"
+          style={{ transition: "filter .2s ease-in-out" }}
+        />
+      </div>
       <kbd
         className={cn(
           "mt-2 text-xs font-thin transition-opacity opacity-0 py-1 px-2 border rounded-md border-gray-700",

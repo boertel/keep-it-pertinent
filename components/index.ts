@@ -1,4 +1,5 @@
 export { default as Author } from "./Author";
+export { default as Logo } from "./Logo";
 export { default as Avatar } from "./Avatar";
 export { default as Bio } from "./Bio";
 export { default as Datetime } from "./Datetime";
