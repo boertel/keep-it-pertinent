@@ -313,10 +313,15 @@ function UnfollowConfirmationDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const focusButton = useCallback((node: HTMLButtonElement) => {
+    if (node) {
+      node.focus();
+    }
+  }, []);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [checkbox, setCheckbox] = useState<boolean>(false);
 
-  const handleOnConfirm = () => {
+  const handleOnConfirm = useCallback(() => {
     setIsLoading(true);
     sessionStorage.setItem(
       "showConfirmations",
@@ -325,7 +330,7 @@ function UnfollowConfirmationDialog({
     onConfirm();
     setIsLoading(false);
     onClose();
-  };
+  }, [onConfirm, onClose, setIsLoading, checkbox]);
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose}>
@@ -352,6 +357,7 @@ function UnfollowConfirmationDialog({
             className="bg-red-500 focus:bg-red-600 hover:bg-red-600 text-black focus:ring-red-500 border-none"
             onClick={handleOnConfirm}
             isLoading={isLoading}
+            ref={focusButton}
           >
             Yes, I want to <b>un-follow</b> {username}
           </Button>
@@ -443,9 +449,9 @@ const Button = forwardRef(function FooterButton(
         onClick(evt);
       }
     },
-    [href, onClick]
+    [href, onClick, router]
   );
-  useRegisterShortcut(shortcut, onShortcut, [href, onClick]);
+  useRegisterShortcut(shortcut, onShortcut);
   return (
     <AsComponent
       ref={ref}
