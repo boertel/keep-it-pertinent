@@ -38,30 +38,28 @@ function Items({ children, open }: { children: ReactNode; open: boolean }) {
   );
 }
 
-const Button = forwardRef(
-  (
-    {
-      as,
-      children,
-      shortcut,
-      className,
-      ...props
-    }: { as?: any; children: ReactNode; shortcut?: string; className?: string },
-    ref
-  ) => {
-    return (
-      <Menu.Button
-        ref={ref}
-        as={as}
-        shortcut={shortcut}
-        className={className}
-        {...props}
-      >
-        {children}
-      </Menu.Button>
-    );
-  }
-);
+const Button = forwardRef(function DropdownButton(
+  {
+    as,
+    children,
+    shortcut,
+    className,
+    ...props
+  }: { as?: any; children: ReactNode; shortcut?: string; className?: string },
+  ref
+) {
+  return (
+    <Menu.Button
+      ref={ref}
+      as={as}
+      shortcut={shortcut}
+      className={className}
+      {...props}
+    >
+      {children}
+    </Menu.Button>
+  );
+});
 
 function ItemInput(props: any) {
   return (

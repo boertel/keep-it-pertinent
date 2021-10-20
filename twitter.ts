@@ -55,6 +55,8 @@ export default class Twitter {
     let params = undefined;
     if (["/friends/list", "/lists/list"].includes(args[0])) {
       params = () => args[0];
+    } else if (args[0] === "/lists/members") {
+      params = () => `${args[0]}?list_id=${args[1].list_id}`;
     }
     return cache(key.join(":"), { expiration: 60 * 120, params })(
       this.client.get
@@ -101,6 +103,18 @@ export default class Twitter {
       await redis.del(`twitter:get:${this.userId}:/lists/list`);
       return parseList(created);
     }
+  }
+
+  async removeFromList(listId: string, username: string) {
+    const body = {
+      list_id: listId,
+      screen_name: username,
+    };
+    const { data } = await this.post(`/lists/members/destroy`, body);
+    await redis.del(
+      `twitter:get:${this.userId}:/lists/members?list_id=${listId}`
+    );
+    return data;
   }
 
   async addToList(listId: string, username: string) {

@@ -159,6 +159,17 @@ function Favorite({
     setFavorited(true);
   }, [username]);
 
+  const removeFromFavorite = useCallback(async () => {
+    if (username) {
+      fetch(`/api/twitter/favorite`, {
+        body: JSON.stringify({ username }),
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    setFavorited(true);
+  }, [username]);
+
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
     if (favorited) {
@@ -173,7 +184,7 @@ function Favorite({
     <Button
       className="py-2 border-none text-red-400 relative"
       shortcut="shift+L"
-      onClick={moveToFavorite}
+      onClick={isFavorite ? removeFromFavorite : moveToFavorite}
     >
       <CommandKey shortcut="shift+L" />
       <Shortcut shortcut="shift+L">L</Shortcut>
@@ -327,7 +338,7 @@ function UnfollowConfirmationDialog({
               className="mr-2 focus:outline-none"
               onChange={(evt) => setCheckbox(evt.target.checked)}
             />{" "}
-            Don't show this warning when un-following accounts.
+            Don&apos;t show this warning when un-following accounts.
           </label>
         </Dialog.Content>
         <Dialog.Footer>
@@ -402,53 +413,51 @@ function NotShortcut({
   );
 }
 
-const Button = forwardRef(
-  (
-    {
-      className,
-      children,
-      shortcut,
-      as: AsComponent = "button",
-      onClick,
-      href,
-      isLoading,
-      ...props
-    }: {
-      className?: string;
-      shortcut?: string;
-      children: ReactNode;
-      onClick?: (evt: any) => void;
-      href?: string;
-      isLoading?: boolean;
-      as?: any;
+const Button = forwardRef(function FooterButton(
+  {
+    className,
+    children,
+    shortcut,
+    as: AsComponent = "button",
+    onClick,
+    href,
+    isLoading,
+    ...props
+  }: {
+    className?: string;
+    shortcut?: string;
+    children: ReactNode;
+    onClick?: (evt: any) => void;
+    href?: string;
+    isLoading?: boolean;
+    as?: any;
+  },
+  ref
+) {
+  const router = useRouter();
+  const onShortcut = useCallback(
+    (evt: any) => {
+      if (href) {
+        return router.push(href);
+      } else if (onClick) {
+        onClick(evt);
+      }
     },
-    ref
-  ) => {
-    const router = useRouter();
-    const onShortcut = useCallback(
-      (evt: any) => {
-        if (href) {
-          return router.push(href);
-        } else if (onClick) {
-          onClick(evt);
-        }
-      },
-      [href, onClick]
-    );
-    useRegisterShortcut(shortcut, onShortcut, [href, onClick]);
-    return (
-      <AsComponent
-        ref={ref}
-        className={cn(
-          "border-2 px-6 py-2 rounded-md focus:outline-none focus:ring-opacity-30 focus:ring-4",
-          className
-        )}
-        onClick={onClick}
-        href={href}
-        {...props}
-      >
-        {isLoading ? <>Saving...</> : children}
-      </AsComponent>
-    );
-  }
-);
+    [href, onClick]
+  );
+  useRegisterShortcut(shortcut, onShortcut, [href, onClick]);
+  return (
+    <AsComponent
+      ref={ref}
+      className={cn(
+        "border-2 px-6 py-2 rounded-md focus:outline-none focus:ring-opacity-30 focus:ring-4",
+        className
+      )}
+      onClick={onClick}
+      href={href}
+      {...props}
+    >
+      {isLoading ? <>Saving...</> : children}
+    </AsComponent>
+  );
+});
