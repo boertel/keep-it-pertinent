@@ -323,9 +323,9 @@ function UnfollowConfirmationDialog({
       "showConfirmations",
       JSON.stringify({ unfollow: !checkbox })
     );
+    onClose();
     onConfirm();
     setIsLoading(false);
-    onClose();
   }, [onConfirm, onClose, setIsLoading, checkbox]);
 
   return (
