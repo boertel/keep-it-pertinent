@@ -199,6 +199,7 @@ export default class Twitter {
       exclude_replies: true,
       include_rts: true,
       include_entities: true,
+      tweet_mode: "extended",
     };
     const { data } = await this.get("/statuses/user_timeline", params);
     return data.map((t) => parseTweet(t));
@@ -268,7 +269,7 @@ function parseTweet(tweet, overwrite = {}) {
   let output = {
     id: tweet.id_str,
     createdAt: dayjs.utc(tweet.created_at).format(),
-    text: tweets.autoLink(tweet.text, {
+    text: tweets.autoLink(tweet.full_text, {
       urlEntities: tweet.entities.urls,
     }),
     author: parseUser(tweet.user),

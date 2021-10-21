@@ -1,15 +1,15 @@
 import {
-  useEffect,
-  useRef,
-  useCallback,
   forwardRef,
+  useEffect,
+  useCallback,
   useState,
+  useRef,
   ReactNode,
 } from "react";
 import { useRouter, NextRouter } from "next/router";
 import cn from "classnames";
 import { Dialog, Link, Dropdown } from "@/components";
-import { useShortcutIsActive, useRegisterShortcut } from "@/hooks/useShortcut";
+import { useRegisterShortcut, useShortcutIsActive } from "@/hooks/useShortcut";
 import { useSWRConfig } from "swr";
 import { useLists } from "@/hooks";
 
@@ -88,7 +88,11 @@ export default function Footer() {
   );
 
   return (
-    <footer className="border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20">
+    <footer
+      className={cn(
+        "border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20 opacity-100 transition-opacity"
+      )}
+    >
       <h3 className="mb-4 text-center font-bold text-lg">
         Are these tweets still pertinent to you?
         <Favorite

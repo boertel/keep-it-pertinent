@@ -13,7 +13,7 @@ export default async function tweets(
     return res.status(200).json({ data });
   } catch (exception: any) {
     return res
-      .status(exception.statusCode)
+      .status(exception.statusCode || 500)
       .json({ message: exception.message });
   }
 }
