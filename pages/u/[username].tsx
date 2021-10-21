@@ -43,7 +43,7 @@ export default function Username() {
         {user && (
           <>
             <NextSeo
-              title={`${user.data.name} (${user.data.username}) | expiration`}
+              title={`${user.data.name} (${user.data.username}) | Keep it pertinent`}
             />
             <Bio
               name={user.data.name}
