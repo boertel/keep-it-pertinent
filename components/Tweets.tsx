@@ -1,12 +1,16 @@
 // @ts-nocheck
-import React from "react";
+import React, { useEffect } from "react";
 import cn from "classnames";
 import Tweet from "./Tweet";
 import Link from "next/link";
 import { useJKNavigation } from "@/hooks";
 
 export default function Tweets({ tweets }: { tweets?: any[] }) {
-  const [navIndex, , focus] = useJKNavigation(tweets?.length);
+  const [navIndex, setNavIndex, focus] = useJKNavigation(tweets?.length);
+
+  useEffect(() => {
+    setNavIndex(-1);
+  }, [tweets, setNavIndex]);
 
   return (
     <div className="max-w-prose mx-auto w-full">
