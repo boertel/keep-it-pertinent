@@ -81,7 +81,7 @@ export default function Footer() {
     "Escape",
     () => {
       if (!isUnfollowConfirmationOpen) {
-        router.back();
+        router.push("/");
       }
     },
     [router, isUnfollowConfirmationOpen]
