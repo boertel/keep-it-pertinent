@@ -5,10 +5,12 @@ function Dialog({
   isOpen,
   onClose,
   children,
+  initialFocus,
 }: {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  initialFocus?: any;
 }) {
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -16,6 +18,7 @@ function Dialog({
         as="div"
         className="fixed inset-0 z-30 overflow-y-auto"
         onClose={onClose}
+        initialFocus={initialFocus}
       >
         <div className="min-h-screen px-4 text-center">
           <Transition.Child

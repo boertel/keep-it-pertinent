@@ -313,11 +313,7 @@ function UnfollowConfirmationDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const focusButton = useCallback((node: HTMLButtonElement) => {
-    if (node) {
-      node.focus();
-    }
-  }, []);
+  const focusButton = useRef<HTMLButtonElement>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [checkbox, setCheckbox] = useState<boolean>(false);
 
@@ -333,7 +329,7 @@ function UnfollowConfirmationDialog({
   }, [onConfirm, onClose, setIsLoading, checkbox]);
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose}>
+    <Dialog isOpen={isOpen} onClose={onClose} initialFocus={focusButton}>
       <>
         <Dialog.Title>Danger!</Dialog.Title>
         <Dialog.Content>
