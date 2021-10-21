@@ -1,3 +1,5 @@
+// @ts-nocheck
+import React from "react";
 import cn from "classnames";
 import Tweet from "./Tweet";
 import Link from "next/link";
