@@ -4,10 +4,10 @@ import { NextSeo } from "next-seo";
 
 import Link from "next/link";
 import { Title, Author, Avatar } from "@/components";
-import { useState, useRef, useLayoutEffect, useCallback } from "react";
+import { useRef, useLayoutEffect, useCallback } from "react";
 
 import { useOnLeave, useOnEnter } from "@/hooks/useScrollRestoration";
-import { useRegisterShortcut } from "@/hooks/useShortcut";
+import { useJKNavigation } from "@/hooks";
 
 import { useFollowers } from "../components/Followers";
 
@@ -117,34 +117,4 @@ function Highlight({ follow }: { follow: HTMLAnchorElement | null }) {
       )}
     />
   );
-}
-
-function useJKNavigation(max?: number) {
-  const [navIndex, setNavIndex] = useState<number>(-1);
-
-  useRegisterShortcut(
-    "j",
-    () => {
-      setNavIndex((prev) => {
-        if (max) {
-          return prev >= max - 1 ? prev : prev + 1;
-        } else {
-          return prev + 1;
-        }
-      });
-    },
-    [setNavIndex, max]
-  );
-
-  useRegisterShortcut(
-    "k",
-    () => {
-      setNavIndex((prev) => {
-        return prev <= 0 ? 0 : prev - 1;
-      });
-    },
-    [setNavIndex]
-  );
-
-  return [navIndex, setNavIndex];
 }

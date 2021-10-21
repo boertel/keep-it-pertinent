@@ -1,6 +1,5 @@
 import "../styles/global.css";
 import { NextSeo } from "next-seo";
-import Head from "next/head";
 import cn from "classnames";
 import { SWRConfig } from "swr";
 import Link from "next/link";
@@ -9,7 +8,7 @@ import type { AppProps } from "next/app";
 import { ShortcutProvider, useShortcutIsActive } from "@/hooks/useShortcut";
 import { ScrollRestorationProvider } from "@/hooks/useScrollRestoration";
 import { FollowersProvider } from "../components/Followers";
-import { Logo } from "@/components";
+import { Favicon, Logo } from "@/components";
 import { ListsProvider } from "../hooks/useLists";
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -28,9 +27,7 @@ export default function App({ Component, pageProps }: AppProps) {
           }),
       }}
     >
-      <Head>
-        <link rel="shortcut icon" href="/favicon.svg" />
-      </Head>
+      <Favicon />
       <NextSeo title="Keep it pertinent" />
       <FollowersProvider>
         <ListsProvider>

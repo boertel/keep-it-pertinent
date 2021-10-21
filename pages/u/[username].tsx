@@ -1,47 +1,15 @@
 // @ts-nocheck
 import { useRouter } from "next/router";
-import cn from "classnames";
 import { NextSeo } from "next-seo";
 import useSWR from "swr";
 
-import { useRegisterShortcut } from "@/hooks/useShortcut";
-import { Bio, Footer, Tweet, Suggestions } from "@/components";
-import { useState, useEffect, useRef } from "react";
+import { Bio, Footer, Tweets, Suggestions } from "@/components";
+import { useEffect } from "react";
 import { useFollowers } from "../../components/Followers";
-
-const NUMBER_OF_TWEETS = 20;
 
 export default function Username() {
   const router = useRouter();
   const { query } = router;
-
-  const [currentIndex, setCurrentIndex] = useState<number>(-1);
-  const current = useRef<HTMLElement>();
-
-  useRegisterShortcut(
-    "j",
-    () => {
-      setCurrentIndex((prev) => {
-        return prev < NUMBER_OF_TWEETS - 1 ? prev + 1 : prev;
-      });
-    },
-    [setCurrentIndex]
-  );
-  useRegisterShortcut(
-    "k",
-    () => {
-      setCurrentIndex((prev) => {
-        return prev > 0 ? prev - 1 : prev;
-      });
-    },
-    [setCurrentIndex]
-  );
-
-  useEffect(() => {
-    if (current.current) {
-      current.current.scrollIntoView();
-    }
-  }, [currentIndex]);
 
   const { data: user } = useSWR(
     query.username && `/api/twitter/users/${query.username}`
@@ -92,48 +60,7 @@ export default function Username() {
             <Suggestions className="mt-10 mx-4 sm:mx-0" tweets={tweets.data} />
           </div>
         )}
-        <ul className="mb-20 min-h-screen">
-          {tweets?.data.slice(0, NUMBER_OF_TWEETS).map(
-            (
-              {
-                id,
-                text,
-                createdAt,
-                author,
-                retweet,
-                media,
-              }: {
-                id: number;
-                text: string;
-                createdAt: string;
-                author: any;
-                retweet: any;
-                media: any;
-              },
-              index: number
-            ) => {
-              return (
-                <Tweet
-                  ref={index === currentIndex ? current : null}
-                  key={id}
-                  id={id}
-                  text={text}
-                  author={author}
-                  createdAt={createdAt}
-                  retweet={retweet}
-                  media={media}
-                  className={cn(
-                    "px-4 sm:px-0 ring-offset-4 ring-offset-black border-b border-gray-700",
-                    {
-                      "ring border-transparent rounded-md":
-                        index === currentIndex,
-                    }
-                  )}
-                />
-              );
-            }
-          )}
-        </ul>
+        <Tweets tweets={tweets?.data} />
         {user?.data?.public_metrics && (
           <div className="text-center mb-12">
             <em>and {user.data.public_metrics.tweet_count} more tweets… </em>

@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { forwardRef } from "react";
 import cn from "classnames";
-import tweets from "twitter-text";
 import Avatar from "./Avatar";
 import Author from "./Author";
 import Datetime from "./Datetime";
@@ -24,13 +23,6 @@ interface TweetProps {
   media: any;
   isRetweet: boolean;
   as: any;
-}
-
-function augment(text, entities) {
-  if (entities) {
-    text = tweets.autoLink(text, { urlEntities: entities.urls });
-  }
-  return text;
 }
 
 const Tweet = forwardRef(function MyTweet(
@@ -83,7 +75,7 @@ const Tweet = forwardRef(function MyTweet(
           )}
         </div>
         <div className="space-y-2">
-          <p dangerouslySetInnerHTML={{ __html: augment(text) }} />
+          <p dangerouslySetInnerHTML={{ __html: text }} />
           {retweet && <Tweet as="blockquote" {...retweet} isRetweet={true} />}
           {media.length > 0 && (
             <div className="mt-12" style={{ height: "250px" }}>

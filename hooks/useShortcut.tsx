@@ -105,7 +105,7 @@ export function ShortcutProvider(props) {
       }
       setHints(combinations);
     },
-    [dispatch, shortcuts, setHints]
+    [shortcuts, setHints]
   );
 
   const onKeyUp = useCallback(

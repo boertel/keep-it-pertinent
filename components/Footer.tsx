@@ -64,7 +64,7 @@ export default function Footer() {
         router.push(`/`);
       }
     }
-  }, [username, router, next]);
+  }, [username, router, next, mutate]);
 
   const confirmUnfollow = useCallback(async () => {
     const showConfirmations = JSON.parse(
@@ -81,7 +81,7 @@ export default function Footer() {
     "Escape",
     () => {
       if (!isUnfollowConfirmationOpen) {
-        router.push("/");
+        router.back();
       }
     },
     [router, isUnfollowConfirmationOpen]

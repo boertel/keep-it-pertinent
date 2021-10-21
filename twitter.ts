@@ -1,4 +1,5 @@
 // @ts-nocheck
+import tweets from "twitter-text";
 import OtherTwitter from "twitter";
 import db from "@/db";
 import Cookies from "cookies";
@@ -69,6 +70,15 @@ export default class Twitter {
 
   stream(...args) {
     return promisify(this.client.stream);
+  }
+
+  async getTimeline() {
+    const params = {
+      exclude_replies: true,
+      include_entities: true,
+    };
+    const { data } = await this.getByUser("/statuses/home_timeline", params);
+    return data.map(parseTweet);
   }
 
   async getLists() {
@@ -258,7 +268,9 @@ function parseTweet(tweet, overwrite = {}) {
   let output = {
     id: tweet.id_str,
     createdAt: dayjs.utc(tweet.created_at).format(),
-    text: tweet.text,
+    text: tweets.autoLink(tweet.text, {
+      urlEntities: tweet.entities.urls,
+    }),
     author: parseUser(tweet.user),
     isRetweet:
       tweet.is_quote_status ||
