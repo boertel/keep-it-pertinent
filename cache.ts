@@ -70,11 +70,27 @@ class Cache {
     expiration = expiration || this._expiration;
     const _value = JSON.stringify(value);
     const _key = this.key(key);
-    if (expiration) {
-      this._client.setex(_key, expiration, _value);
-    } else {
-      return this._client.set(_key, _value);
+
+    let chunks: string[] = [];
+    const chunkSize: number = 900_000;
+    let offset: number = 0;
+    while (offset < _value.length) {
+      chunks.push(_value.slice(offset, chunkSize + offset));
+      offset = chunkSize + offset;
     }
+
+    const pipeline = this._client.pipeline();
+    const first = chunks.pop();
+    if (expiration) {
+      pipeline.setex(_key, expiration, first);
+    } else {
+      pipeline.set(_key, first);
+    }
+    chunks.forEach((chunk: string) => {
+      pipeline.append(_key, chunk);
+    });
+    pipeline.exec();
+
     return value;
   }
 

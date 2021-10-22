@@ -467,7 +467,6 @@ const Button = forwardRef(function FooterButton(
   ref
 ) {
   const router = useRouter();
-  shortcut === "shift+B" && console.log(shortcut, href);
   const onShortcut = useCallback(
     (evt: any) => {
       if (href) {
