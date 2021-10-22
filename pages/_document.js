@@ -1,5 +1,4 @@
 import Document, { Html, Head, Main, NextScript } from "next/document";
-import Link from "next/link";
 
 class MyDocument extends Document {
   static async getInitialProps(ctx) {
@@ -8,6 +7,9 @@ class MyDocument extends Document {
   }
 
   render() {
+    console.log(
+      `${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA} (${process.env.NEXT_PUBLIC_VERCEL_ENV})`
+    );
     return (
       <Html className="dark">
         <Head />

@@ -13,9 +13,6 @@ import { ListsProvider } from "../hooks/useLists";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  console.log(
-    `${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA} (${process.env.NEXT_PUBLIC_VERCEL_ENV})`
-  );
   return (
     <SWRConfig
       value={{
