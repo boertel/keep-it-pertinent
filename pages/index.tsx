@@ -30,6 +30,7 @@ export default function Home() {
     ({ scrollY, navIndex }: ScrollRestoration) => {
       window.scrollTo(0, scrollY);
       if (navIndex !== undefined) {
+        // @ts-ignore
         setNavIndex(navIndex);
       }
     },

@@ -35,7 +35,11 @@ export default function Bio({
         )}
       >
         <div className="flex items-center space-x-2">
-          <Avatar src={avatar} className="border-gray-400" />
+          <Avatar
+            src={avatar}
+            className="border-gray-400"
+            alt={`${username} avatar`}
+          />
           <div className="flex flex-col">
             <h1 className="text-xxl font-bold">{name}</h1>
             <Link href={`https://twitter.com/${username}`}>
