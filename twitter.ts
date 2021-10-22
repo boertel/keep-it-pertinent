@@ -135,7 +135,7 @@ export default class TwitterQuery extends Query {
   async mutate(mutation: any) {
     const key = this.getCacheKey();
     const data: { data: any; response: any } = await this.cache.get(key);
-    if (data === undefined) {
+    if (!data) {
       console.warn(
         `skip mutating ${this.getCacheKey()} because cache record is missing`
       );
