@@ -232,6 +232,7 @@ class Twitter {
     const params = {
       exclude_replies: true,
       include_entities: true,
+      tweet_mode: "extended",
     };
     const query = new TwitterQuery(
       HttpMethod.GET,
