@@ -10,7 +10,7 @@ import { useRouter, NextRouter } from "next/router";
 import cn from "classnames";
 import { Dialog, Link, Dropdown } from "@/components";
 import { useRegisterShortcut, useShortcutIsActive } from "@/hooks/useShortcut";
-import { useSWRConfig } from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { useLists } from "@/hooks";
 
 import { useFollowers } from "./Followers";
@@ -24,7 +24,7 @@ function useCurrentUsername(): string | undefined {
   return username;
 }
 
-export default function Footer() {
+export default function Footer({ userId }: { userId: string }) {
   const router: NextRouter = useRouter();
   const username = useCurrentUsername();
 
@@ -36,14 +36,14 @@ export default function Footer() {
     previous: any;
   };
 
-  const { favorites } = useLists();
+  const { favorites, favoriteListId } = useLists();
 
   const { mutate } = useSWRConfig();
 
   const unfollow = useCallback(() => {
     if (username) {
       fetch(`/api/twitter/unfollow`, {
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, userId }),
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -64,7 +64,7 @@ export default function Footer() {
         router.push(`/`);
       }
     }
-  }, [username, router, next, mutate]);
+  }, [username, router, next, mutate, userId]);
 
   const confirmUnfollow = useCallback(async () => {
     const showConfirmations = JSON.parse(
@@ -97,7 +97,9 @@ export default function Footer() {
         Are these tweets still pertinent to you?
         <Favorite
           username={username}
+          userId={userId}
           isFavorite={username ? favorites[username] : false}
+          favoriteListId={favoriteListId}
         />
       </h3>
       <div className="flex items-center justify-center space-x-3 flex-wrap">
@@ -146,22 +148,37 @@ export default function Footer() {
 function Favorite({
   username,
   isFavorite,
+  userId,
+  favoriteListId,
 }: {
-  username?: string | string[];
+  username?: string;
+  userId?: string;
   isFavorite: boolean;
+  favoriteListId?: string;
 }) {
   const [favorited, setFavorited] = useState<boolean>(false);
+  const { mutate } = useSWRConfig();
 
   const moveToFavorite = useCallback(async () => {
-    if (username) {
+    if (username && userId) {
       fetch(`/api/twitter/favorite`, {
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, userId }),
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
+      mutate(
+        `/api/twitter/lists/${favoriteListId}`,
+        (prev: { [key: string]: true }) => {
+          return {
+            ...prev,
+            [username]: true,
+          };
+        },
+        false
+      );
     }
     setFavorited(true);
-  }, [username]);
+  }, [username, userId, favoriteListId, mutate]);
 
   const removeFromFavorite = useCallback(async () => {
     if (username) {
@@ -170,9 +187,18 @@ function Favorite({
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
+      mutate(
+        `/api/twitter/lists/${favoriteListId}`,
+        (prev: { [key: string]: true }) => {
+          const removed: { [key: string]: true } = { ...prev };
+          delete removed[username];
+          return removed;
+        },
+        false
+      );
     }
     setFavorited(true);
-  }, [username]);
+  }, [username, favoriteListId, mutate]);
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
@@ -441,6 +467,7 @@ const Button = forwardRef(function FooterButton(
   ref
 ) {
   const router = useRouter();
+  shortcut === "shift+B" && console.log(shortcut, href);
   const onShortcut = useCallback(
     (evt: any) => {
       if (href) {
@@ -451,7 +478,7 @@ const Button = forwardRef(function FooterButton(
     },
     [href, onClick, router]
   );
-  useRegisterShortcut(shortcut, onShortcut);
+  useRegisterShortcut(shortcut, onShortcut, [onShortcut]);
   return (
     <AsComponent
       ref={ref}

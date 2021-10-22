@@ -11,6 +11,7 @@ export default async function followers(
     const data = await t.getFollowedUsers({});
     return res.status(200).json({ data });
   } catch (exception: any) {
+    console.error(exception);
     return res
       .status(exception.statusCode || 500)
       .json({ message: exception?.message });

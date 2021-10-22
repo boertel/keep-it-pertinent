@@ -24,7 +24,11 @@ export default async function list(req: NextApiRequest, res: NextApiResponse) {
         return res.json(await t.getLists());
       }
     } else if (req.method === "POST" && listId) {
-      const data = await t.addToList(listId, req.body.username);
+      const data = await t.addToList(
+        listId,
+        req.body.username,
+        req.body.userId
+      );
       return res.json(data);
     }
   } catch (exception: any) {

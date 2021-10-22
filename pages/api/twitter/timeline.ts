@@ -11,6 +11,7 @@ export default async function timeline(
     const tweets = await t.getTimeline();
     return res.status(200).json(tweets);
   } catch (exception: any) {
+    console.error(exception);
     return res
       .status(exception.statusCode || 500)
       .json({ message: exception.message });

@@ -25,7 +25,7 @@ export function ListsProvider({ children }: { children: ReactNode }) {
   const favoriteListId: string | undefined = favorite?.id;
 
   const { data: favorites = {} } = useSWR<Members>(
-    favoriteListId ? `/api/twitter/lists/${favoriteListId}/` : null
+    favoriteListId ? `/api/twitter/lists/${favoriteListId}` : null
   );
 
   const context: ListsReturn = useMemo(

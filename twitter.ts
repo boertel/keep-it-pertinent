@@ -1,25 +1,36 @@
-// @ts-nocheck
 import tweets from "twitter-text";
 import OtherTwitter from "twitter";
 import db from "@/db";
 import Cookies from "cookies";
-import redis from "@/redis";
 import dayjs from "@/dayjs";
-import { cache } from "@/cache";
+import Cache from "@/cache";
 import { TWITTER_CLIENT_ID, TWITTER_CLIENT_SECRET } from "@/config";
 
-export default class Twitter {
-  userId: string;
+enum HttpMethod {
+  GET = "GET",
+  POST = "POST",
+  DELETE = "DELETE",
+  PUT = "PUT",
+  PATCH = "PATCH",
+  HEAD = "HEAD",
+  OPTIONS = "OPTIONS",
+}
+
+interface QueryData {
+  [key: string]: any;
+}
+
+class TwitterFetcher {
   client: any;
 
   constructor({
     oauth_token,
     oauth_token_secret,
-    userId,
+    uid,
   }: {
     oauth_token: string;
     oauth_token_secret: string;
-    userId: string;
+    uid: string;
   }) {
     this.client = new OtherTwitter({
       consumer_key: TWITTER_CLIENT_ID,
@@ -28,48 +39,191 @@ export default class Twitter {
       access_token_secret: oauth_token_secret,
     });
 
-    this.userId = userId;
-
-    const methods = ["get", "post", "stream"];
+    const methods: ["get", "post", "stream"] = ["get", "post", "stream"];
     methods.forEach((method) => {
-      this.client[method] = promisify(this.client[method].bind(this.client));
+      this.client[method] = promisify(
+        this.client[method].bind(this.client),
+        uid
+      );
+      this[method] = this[method].bind(this);
     });
   }
 
-  getByUser(...args) {
-    if (!this.userId) {
-      throw Error("userId must be defined in order to cache this API call");
+  get(...args: any[]) {
+    return this.client.get(...args);
+  }
+
+  post(...args: any[]) {
+    return this.client.post(...args);
+  }
+
+  stream(...args: any[]) {
+    return this.client.stream(...args);
+  }
+}
+
+class Query {
+  method: HttpMethod;
+  path: string;
+  parameters?: QueryData;
+
+  protected cacheKey?: string;
+  protected cache: Cache;
+
+  static fetcher: any;
+
+  constructor(
+    method: HttpMethod,
+    path: string,
+    parameters?: QueryData,
+    expiration = 60 * 120
+  ) {
+    this.method = method;
+    this.path = path;
+    this.parameters = parameters;
+
+    this.cache = new Cache("twitter", { expiration });
+
+    this.getCacheKey = this.getCacheKey.bind(this);
+    this.request = this.request.bind(this);
+  }
+
+  setCacheKey(key: string) {
+    this.cacheKey = key;
+  }
+
+  public getCacheKey(): string {
+    if (this.cacheKey) {
+      return this.cacheKey;
+    } else {
+      return Cache.serializeKey([this.method, this.path, this.parameters]);
     }
-    return this._get(this.userId, ...args);
   }
 
-  get(...args) {
-    return this._get(null, ...args);
+  request(fetcher: any) {
+    return this.cache.wrap(fetcher, this.getCacheKey)(
+      this.path,
+      this.parameters
+    );
+  }
+}
+
+export default class TwitterQuery extends Query {
+  userId?: string;
+
+  constructor(
+    method: HttpMethod,
+    path: string,
+    parameters?: QueryData,
+    userId?: string
+  ) {
+    super(method, path, parameters || {});
+    this.userId = userId;
+    this.mutate = this.mutate.bind(this);
   }
 
-  _get(cacheKey: string | null, ...args) {
-    let key = ["twitter", "get"];
-    if (cacheKey) {
-      key.push(cacheKey);
+  getCacheKey(): string {
+    const cacheKey = super.getCacheKey();
+    if (this.userId) {
+      return `${cacheKey}:${this.userId}`;
     }
-    // TODO hack! we should be able to define this when calling `get` / `getByUser`
-    let params = undefined;
-    if (["/friends/list", "/lists/list"].includes(args[0])) {
-      params = () => args[0];
-    } else if (args[0] === "/lists/members") {
-      params = () => `${args[0]}?list_id=${args[1].list_id}`;
+    return cacheKey;
+  }
+
+  async mutate(mutation: any) {
+    const key = this.getCacheKey();
+    const data: { data: any; response: any } = await this.cache.get(key);
+    if (data === undefined) {
+      console.warn(
+        `skip mutating ${this.getCacheKey()} because cache record is missing`
+      );
+      return;
     }
-    return cache(key.join(":"), { expiration: 60 * 120, params })(
-      this.client.get
-    )(...args);
+    try {
+      const newData = mutation(data.data);
+      const expiration = await this.cache.ttl(key);
+      // -2 means the key doesn't exist
+      if (expiration !== -2) {
+        await this.cache.set(
+          key,
+          { data: newData, response: data.response },
+          expiration
+        );
+      }
+    } catch (exception) {
+      if (!(exception instanceof AbortMutation)) {
+        throw exception;
+      } else {
+        console.warn(`Abort mutation for ${this.getCacheKey()}`);
+      }
+    }
   }
 
-  post(...args) {
-    return promisify(this.client.post)(...args);
+  request() {
+    const fetcher = TwitterQuery.fetcher;
+    const method = fetcher[this.method.toLowerCase()];
+    console.log("calling", this.getCacheKey());
+    try {
+      if (this.method === HttpMethod.GET) {
+        return super.request(method);
+      } else {
+        return method(this.path, this.parameters);
+      }
+    } catch (exception) {
+      console.error(exception);
+    }
   }
+}
 
-  stream(...args) {
-    return promisify(this.client.stream);
+function append(obj: any) {
+  return function (data: any) {
+    if (!data.find(({ id_str }: any) => id_str === obj.id_str)) {
+      return [...data, obj];
+    } else {
+      throw new AbortMutation();
+    }
+  };
+}
+
+function remove(id: string) {
+  return function (data: any) {
+    if (!data.find(({ id_str }: any) => id_str === id)) {
+      return data.filter(({ id_str }: any) => id_str !== id);
+    } else {
+      throw new AbortMutation();
+    }
+  };
+}
+
+class Twitter {
+  userId: string;
+  queries: { [key: string]: (...args: any[]) => TwitterQuery };
+
+  constructor(userId: string) {
+    this.userId = userId;
+
+    this.queries = {
+      "/lists/list": () =>
+        new TwitterQuery(HttpMethod.GET, "/lists/list", undefined, this.userId),
+      "/lists/members": (listId: string) =>
+        new TwitterQuery(HttpMethod.GET, "/lists/members", {
+          include_entities: false,
+          skip_status: true,
+          list_id: listId,
+        }),
+      "/friends/list": (cursor: number = -1) =>
+        new TwitterQuery(
+          HttpMethod.GET,
+          "/friends/list",
+          {
+            cursor,
+            count: 200,
+            skip_status: true,
+            include_user_entities: true,
+          },
+          this.userId
+        ),
+    };
   }
 
   async getTimeline() {
@@ -77,94 +231,27 @@ export default class Twitter {
       exclude_replies: true,
       include_entities: true,
     };
-    const { data } = await this.getByUser("/statuses/home_timeline", params);
+    const query = new TwitterQuery(
+      HttpMethod.GET,
+      "/statuses/home_timeline",
+      params,
+      this.userId
+    );
+    const { data } = await query.request();
     return data.map(parseTweet);
   }
 
   async getLists() {
-    const { data } = await this.getByUser("/lists/list");
+    const { data } = await this.queries["/lists/list"]().request();
     return data.map(parseList);
   }
 
-  async getListMembers(listId: string) {
-    const { data } = await this.getByUser("/lists/members", {
-      include_entities: false,
-      skip_status: true,
-      list_id: listId,
-    });
-    const members: { [key: string]: boolean } = {};
-    data.users.forEach(({ screen_name }) => {
-      members[screen_name] = true;
-    });
-    return members;
-  }
-
-  async getOrCreateList(name: string, mode?: string) {
-    const lists = await this.getLists();
-    const existingList = lists.find((list) => list.name === name);
-    if (existingList) {
-      return existingList;
-    } else {
-      const body = {
-        name,
-        mode: mode || "private",
-      };
-      const { data: created } = await this.post("/lists/create", body);
-      await redis.del(`twitter:get:${this.userId}:/lists/list`);
-      return parseList(created);
-    }
-  }
-
-  async removeFromList(listId: string, username: string) {
-    const body = {
-      list_id: listId,
-      screen_name: username,
-    };
-    const { data } = await this.post(`/lists/members/destroy`, body);
-    await redis.del(
-      `twitter:get:${this.userId}:/lists/members?list_id=${listId}`
-    );
-    return data;
-  }
-
-  async addToList(listId: string, username: string) {
-    const body = {
-      list_id: listId,
-      screen_name: username,
-    };
-    const { data } = await this.post(`/lists/members/create`, body);
-    return data;
-  }
-
-  async unfollow(username: string) {
-    const body = {
-      screen_name: username,
-    };
-
-    // TODO would be nicer to have something cleaner
-    const { data } = await this.post("/friendships/destroy", body);
-    const key = `twitter:get:${this.userId}:/friends/list`;
-    const cached = await redis.get(key);
-    if (cached) {
-      try {
-        const expiration = parseInt(await redis.ttl(key), 10);
-        const json = JSON.parse(cached);
-        const withoutUsername = {
-          ...json,
-          data: {
-            ...json.data,
-            users: json.data.users.filter(
-              ({ screen_name }) => screen_name !== username
-            ),
-          },
-        };
-        await redis.setex(key, expiration, JSON.stringify(withoutUsername));
-      } catch (exception) {
-        console.error(exception);
-      }
-    }
-
-    return data;
+  async getFollowedUsers({ cursor = -1 }: { cursor?: number }) {
+    const query = this.queries["/friends/list"](cursor);
+    const { data } = await query.request();
+    // FIXME pagination is NOT handled
+    // here are the attributes for data [ 'users', 'next_cursor', 'next_cursor_str', 'previous_cursor', 'previous_cursor_str', 'total_count' ]
+    return data.users.map(parseUser);
   }
 
   async getUserByUsername(username?: string) {
@@ -174,22 +261,10 @@ export default class Twitter {
         screen_name: username,
       };
     }
-    const { data } = await this.get("/users/lookup", params);
+    const query = new TwitterQuery(HttpMethod.GET, "/users/lookup", params);
+    const { data, response } = await query.request();
     const user = data[0];
     return parseUser(user);
-  }
-
-  async getFollowedUsers({ cursor = -1 }: { cursor?: number }) {
-    const params = {
-      cursor,
-      count: 200,
-      skip_status: true,
-      include_user_entities: true,
-    };
-    const { data } = await this.getByUser("/friends/list", params);
-    // FIXME pagination is NOT handled
-    // here are the attributes for data [ 'users', 'next_cursor', 'next_cursor_str', 'previous_cursor', 'previous_cursor_str', 'total_count' ]
-    return data.users.map(parseUser);
   }
 
   async getTweetsByUsername(username: string) {
@@ -201,15 +276,114 @@ export default class Twitter {
       include_entities: true,
       tweet_mode: "extended",
     };
-    const { data } = await this.get("/statuses/user_timeline", params);
-    return data.map((t) => parseTweet(t));
+
+    const query = new TwitterQuery(
+      HttpMethod.GET,
+      "/statuses/user_timeline",
+      params
+    );
+    const { data } = await query.request();
+    return data.map((t: any) => parseTweet(t));
+  }
+
+  async getOrCreateList(name: string, mode?: string) {
+    const lists = await this.getLists();
+    const existingList = lists.find((list: any) => list.name === name);
+    if (existingList) {
+      return existingList;
+    } else {
+      const body = {
+        name,
+        mode: mode || "private",
+      };
+      const query = new TwitterQuery(HttpMethod.POST, "/lists/create", body);
+      const { data: created } = await query.request();
+      const { mutate } = this.queries["/lists/list"]();
+      await mutate(append(created));
+      return parseList(created);
+    }
+  }
+
+  async getListMembers(listId: string) {
+    const { data } = await this.queries["/lists/members"](listId).request();
+    const members: { [key: string]: boolean } = {};
+    data.users.forEach(({ screen_name }: { screen_name: string }) => {
+      members[screen_name] = true;
+    });
+    return members;
+  }
+
+  async removeFromList(listId: string, username: string, userId: string) {
+    const body = {
+      list_id: listId,
+      screen_name: username,
+    };
+    const query = new TwitterQuery(
+      HttpMethod.POST,
+      "/lists/members/destroy",
+      body
+    );
+    await query.request();
+    const { mutate } = this.queries["/lists/members"](listId);
+    await mutate(({ users = [] }) => {
+      return {
+        users: remove(userId)(users),
+      };
+    });
+  }
+
+  async addToList(listId: string, username: string, userId: string) {
+    const body = {
+      list_id: listId,
+      screen_name: username,
+    };
+    const query = new TwitterQuery(
+      HttpMethod.POST,
+      "/lists/members/create",
+      body
+    );
+    const { data: added } = await query.request();
+    const { mutate } = this.queries["/lists/members"](listId);
+    await mutate(({ users = [], ...rest }) => {
+      return {
+        ...rest,
+        users: append({ id_str: userId, screen_name: username })(users),
+      };
+    });
+    return added;
+  }
+
+  async unfollow(username: string) {
+    const body = {
+      screen_name: username,
+    };
+    const query = new TwitterQuery(
+      HttpMethod.POST,
+      "/friendships/destroy",
+      body
+    );
+    const { data } = await query.request();
+    const { mutate } = this.queries["/friends/list"]();
+    mutate(({ users = [], ...rest }) => {
+      return {
+        ...rest,
+        users: users.filter(
+          ({ screen_name }: { screen_name: string }) => screen_name !== username
+        ),
+      };
+    });
+
+    return data;
   }
 }
 
-export class HttpError extends Error {
-  statusCode: number;
-  message: string;
+class AbortMutation extends Error {}
+
+export abstract class HttpError extends Error {
+  abstract statusCode: number;
+  abstract message: string;
 }
+
 class UnauthorizedError extends HttpError {
   statusCode: number = 401;
   message: string = "Unauthorized";
@@ -239,11 +413,14 @@ export async function createTwitterFromReq(req) {
   if (!twitterAccount) {
     throw new UnauthorizedError();
   }
-  return new Twitter({
+  const fetcher = new TwitterFetcher({
     oauth_token: twitterAccount.oauth_token,
     oauth_token_secret: twitterAccount.oauth_token_secret,
-    userId: twitterAccount.providerAccountId,
+    uid: twitterAccount.providerAccountId,
   });
+
+  TwitterQuery.fetcher = fetcher;
+  return new Twitter(twitterAccount.providerAccountId);
 }
 
 function parseList({
@@ -266,12 +443,19 @@ function parseTweet(tweet, overwrite = {}) {
   if (tweet.retweeted_status) {
     return parseTweet(tweet.retweeted_status, { isRetweet: true });
   }
+
+  let text: string = tweet.full_text || tweet.text;
+  try {
+    text = tweets.autoLink(text, {
+      urlEntities: tweet.entities.urls,
+    });
+  } catch (exception) {
+    console.error(exception);
+  }
   let output = {
     id: tweet.id_str,
     createdAt: dayjs.utc(tweet.created_at).format(),
-    text: tweets.autoLink(tweet.full_text, {
-      urlEntities: tweet.entities.urls,
-    }),
+    text,
     author: parseUser(tweet.user),
     isRetweet:
       tweet.is_quote_status ||
@@ -291,7 +475,7 @@ function parseTweet(tweet, overwrite = {}) {
   return output;
 }
 
-function parseUser(user) {
+function parseUser(user: any) {
   return {
     avatar: user.profile_image_url_https,
     name: user.name,
@@ -301,21 +485,29 @@ function parseUser(user) {
     createdAt: dayjs.utc(user.created_at).format(),
     tweetsCount: user.statuses_count,
     description: user.description,
-    urls: user?.entities?.url?.urls.map(({ display_url, expanded_url }) => ({
-      displayUrl: display_url,
-      expandedUrl: expanded_url,
-    })),
+    urls: user?.entities?.url?.urls.map(
+      ({
+        display_url,
+        expanded_url,
+      }: {
+        display_url: string;
+        expanded_url: string;
+      }) => ({
+        displayUrl: display_url,
+        expandedUrl: expanded_url,
+      })
+    ),
   };
 }
 
-function promisify(func) {
-  return function (...args) {
+function promisify(func: any, uid: string) {
+  return function (...args: any) {
     return new Promise((resolve, reject) => {
-      function callback(error, data, response) {
+      function callback(error: any, data: any, response: any) {
         if (error) {
           reject(error);
         } else {
-          console.log(limits(response.headers), args[0]);
+          console.log(limits(response.headers), uid, args[0]);
           resolve({ data, response });
         }
       }

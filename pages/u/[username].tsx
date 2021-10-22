@@ -67,7 +67,7 @@ export default function Username() {
           </div>
         )}
       </div>
-      <Footer />
+      <Footer userId={user?.data.id} />
     </>
   );
 }

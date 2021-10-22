@@ -15,8 +15,8 @@ const calendarPlugin = (o, c, d) => {
     lastDay: `[Yesterday at] ${LT}`,
     sameDay: `[Today at] ${LT}`,
     nextDay: `[Tomorrow at] ${LT}`,
-    nextWeek: `dddd [at] ${LT}`,
-    lastWeek: `[Last] dddd [at] ${LT}`,
+    nextWeek: `[Next] dddd [at] ${LT}`,
+    lastWeek: `dddd [at] ${LT}`,
     sameElse: L,
   };
   const proto = c.prototype;
@@ -59,7 +59,7 @@ export const calendar = (now) => {
     nextDay: "[Tomorrow at] h:mm A", // The next day ( Tomorrow at 2:30 AM )
     nextWeek: "dddd [at] h:mm A", // The next week ( Sunday at 2:30 AM )
     lastDay: "[Yesterday at] h:mm A", // The day before ( Yesterday at 2:30 AM )
-    lastWeek: "[Last] dddd", // Last week ( Last Monday at 2:30 AM )
+    lastWeek: "dddd", // Last week ( Last Monday at 2:30 AM )
     lastYear: "[Last year]",
     sameElse: "MMM DD, YYYY", // Everything else ( 17/10/2011 )
   });

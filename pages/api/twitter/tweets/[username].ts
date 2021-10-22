@@ -12,6 +12,7 @@ export default async function tweets(
     const data = await t.getTweetsByUsername(req.query.username);
     return res.status(200).json({ data });
   } catch (exception: any) {
+    console.error(exception);
     return res
       .status(exception.statusCode || 500)
       .json({ message: exception.message });

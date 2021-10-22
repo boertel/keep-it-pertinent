@@ -191,10 +191,10 @@ export function useShortcut() {
 export function useRegisterShortcut(
   combination: string | null | undefined,
   callback: any,
-  dependencies?: any
+  dependencies: any[] = []
 ) {
   const { register, unregister, hints } = useShortcut();
-  const memoed = useCallback(callback, dependencies || []);
+  const memoed = useCallback(callback, dependencies);
 
   useEffect(() => {
     register(combination, memoed);

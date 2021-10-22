@@ -6,9 +6,9 @@ interface CacheOptions {
 }
 
 class Cache {
-  _client: any;
-  _prefix: string;
-  _expiration?: number;
+  private _client: any;
+  private _prefix: string;
+  private _expiration?: number;
 
   static serializeKey: (...args: any[]) => string;
 
@@ -16,6 +16,8 @@ class Cache {
     this._client = client;
     this._prefix = prefix;
     this._expiration = options.expiration;
+
+    this.wrap = this.wrap.bind(this);
   }
 
   key(key: string) {
@@ -30,7 +32,7 @@ class Cache {
       let cached = await self.get(key);
       if (!cached) {
         try {
-          cached = await func.apply(self, args);
+          cached = await func(...args);
         } catch (exception) {
           throw exception;
         }
@@ -46,8 +48,12 @@ class Cache {
     return wrapped.bind(this);
   }
 
+  async ttl(key: string): Promise<number> {
+    return parseInt(await this._client.ttl(this.key(key)), 10);
+  }
+
   async get(key: string) {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
       this._client.get(this.key(key), (err: any, reply: string) => {
         if (err) {
           return reject(err);
@@ -55,7 +61,7 @@ class Cache {
         if (reply) {
           return resolve(JSON.parse(reply));
         }
-        return resolve();
+        return resolve(null);
       });
     });
   }
