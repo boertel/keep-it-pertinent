@@ -1,4 +1,5 @@
 import tweets from "twitter-text";
+import { NextApiRequest } from "next";
 import OtherTwitter from "twitter";
 import db from "@/db";
 import Cookies from "cookies";
@@ -32,6 +33,7 @@ class TwitterFetcher {
     oauth_token_secret: string;
     uid: string;
   }) {
+    // @ts-ignore
     this.client = new OtherTwitter({
       consumer_key: TWITTER_CLIENT_ID,
       consumer_secret: TWITTER_CLIENT_SECRET,
@@ -389,7 +391,8 @@ class UnauthorizedError extends HttpError {
   message: string = "Unauthorized";
 }
 
-export async function createTwitterFromReq(req) {
+export async function createTwitterFromReq(req: NextApiRequest) {
+  // @ts-ignore
   const cookies = new Cookies(req);
   const sessionToken =
     cookies.get("next-auth.session-token") ||
@@ -408,7 +411,7 @@ export async function createTwitterFromReq(req) {
   });
 
   const twitterAccount = user.accounts.find(
-    ({ provider }) => provider === "twitter"
+    ({ provider }: { provider: string }) => provider === "twitter"
   );
   if (!twitterAccount) {
     throw new UnauthorizedError();
@@ -439,7 +442,39 @@ function parseList({
   };
 }
 
-function parseTweet(tweet, overwrite = {}) {
+interface Url {
+  displayUrl: string;
+  expandedUrl: string;
+}
+
+interface Author {
+  avatar: string;
+  name: string;
+  id: string;
+  location: string;
+  username: string;
+  createdAt: string;
+  tweetsCount: number;
+  description: string;
+  urls: Url[];
+}
+
+interface Media {
+  id: string;
+  url: string;
+}
+
+interface Tweet {
+  id: string;
+  createdAt: string;
+  text: string;
+  author: Author;
+  isRetweet: boolean;
+  retweet?: Tweet;
+  media?: Media[];
+}
+
+function parseTweet(tweet: any, overwrite = {}): Tweet {
   if (tweet.retweeted_status) {
     return parseTweet(tweet.retweeted_status, { isRetweet: true });
   }
@@ -452,7 +487,7 @@ function parseTweet(tweet, overwrite = {}) {
   } catch (exception) {
     console.error(exception);
   }
-  let output = {
+  let output: Tweet = {
     id: tweet.id_str,
     createdAt: dayjs.utc(tweet.created_at).format(),
     text,
@@ -467,7 +502,7 @@ function parseTweet(tweet, overwrite = {}) {
     output.retweet = parseTweet(tweet.quoted_status);
   }
   if (tweet.extended_entities?.media) {
-    output.media = tweet.extended_entities.media.map((m) => ({
+    output.media = tweet.extended_entities.media.map((m: any) => ({
       id: m.id_str,
       url: m.media_url_https,
     }));
@@ -475,7 +510,7 @@ function parseTweet(tweet, overwrite = {}) {
   return output;
 }
 
-function parseUser(user: any) {
+function parseUser(user: any): Author {
   return {
     avatar: user.profile_image_url_https,
     name: user.name,
