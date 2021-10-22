@@ -1,4 +1,3 @@
-// @ts-nocheck
 import cn from "classnames";
 import { NextSeo } from "next-seo";
 
@@ -38,6 +37,7 @@ export default function Home() {
   );
 
   useOnEnter<ScrollRestoration>(onEnter);
+  // @ts-ignore
   useOnLeave<ScrollRestoration>(onLeave);
 
   const ref = useRef<HTMLAnchorElement | null>(null);
@@ -55,6 +55,7 @@ export default function Home() {
       <Title />
       <ul className="space-y-2 relative">
         <Highlight follow={ref.current} />
+        {/* @ts-ignore */}
         {followers?.data.map(({ id, name, username, avatar }, index) => (
           <li key={id}>
             <Link href={`/u/${username}`}>
@@ -66,6 +67,7 @@ export default function Home() {
               >
                 <Avatar
                   src={avatar}
+                  alt={`${username} avatar`}
                   className={cn(
                     "focus:border-blue-600 hover:border-blue-600",
                     navIndex === index ? "border-blue-600" : "border-gray-400"
@@ -90,9 +92,9 @@ function Highlight({ follow }: { follow: HTMLAnchorElement | null }) {
   const lastAt = useRef<number>(0);
 
   const ms = 150;
-  let transitions = ["opacity .2s ease-in-out", `top ${ms}ms ease-in-out`];
 
   useLayoutEffect(() => {
+    let transitions = ["opacity .2s ease-in-out", `top ${ms}ms ease-in-out`];
     if (follow) {
       const { height } = window.getComputedStyle(follow);
       if (ref.current) {

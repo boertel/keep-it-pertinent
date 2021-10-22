@@ -1,5 +1,6 @@
+// eslint-disable @next/next/no-img-element
 import cn from "classnames";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 interface Window {
   Image: {
@@ -27,12 +28,47 @@ function useImageOnLoad(src?: string): boolean {
 
 export default function Avatar({
   src,
+  alt,
   className,
 }: {
   src?: string;
+  alt: string;
   className?: string;
 }) {
-  const isLoaded = useImageOnLoad(src);
+  //const isLoaded = useImageOnLoad(src);
+
+  const ref = useRef<HTMLImageElement>();
+
+  const callback = useCallback(
+    (entries) => {
+      const entry = entries[0];
+      if (entry.isIntersecting && src) {
+        const img = new window.Image();
+        img.onload = () => {
+          entry.target.classList.remove("bg-gray-700");
+          entry.target.src = src;
+        };
+        img.src = src;
+
+        if (ref.current) {
+          observer.current.unobserve(ref.current);
+        }
+      }
+    },
+    [src]
+  );
+
+  const observer = useRef<IntersectionObserver>(
+    new IntersectionObserver(callback)
+  );
+
+  const image = useCallback((node: HTMLImageElement) => {
+    if (node) {
+      observer.current.observe(node);
+      ref.current = node;
+    }
+  }, []);
+
   return (
     <div
       className={cn(
@@ -41,14 +77,40 @@ export default function Avatar({
       )}
     >
       <img
-        src={src}
+        alt={alt}
+        ref={image}
+        style={{ fontSize: "0px" }}
         className={cn(
-          "rounded-full border-4 border-black transition-colors min-w-full min-h-full",
-          {
-            "bg-gray-700": !isLoaded,
-          }
+          "rounded-full border-4 border-black transition-colors min-w-full min-h-full bg-gray-700"
         )}
       />
     </div>
+  );
+}
+
+function checkVisibility(
+  boundingClientRect: DOMRect,
+  partial: boolean = false
+): boolean {
+  const { top, right, bottom, left, width, height } = boundingClientRect;
+
+  if (top + right + bottom + left === 0) {
+    return false;
+  }
+
+  const topCheck = partial ? top + height : top;
+  const bottomCheck = partial ? bottom - height : bottom;
+  const rightCheck = partial ? right - width : right;
+  const leftCheck = partial ? left + width : left;
+
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
+  console.log(topCheck, leftCheck);
+
+  return (
+    topCheck >= 0 &&
+    leftCheck >= 0 &&
+    bottomCheck <= windowHeight &&
+    rightCheck <= windowWidth
   );
 }
