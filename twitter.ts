@@ -164,7 +164,7 @@ export default class TwitterQuery extends Query {
   request() {
     const fetcher = TwitterQuery.fetcher;
     const method = fetcher[this.method.toLowerCase()];
-    console.log("calling", this.getCacheKey());
+    console.log("calling", this.getCacheKey().replaceAll('"', '\\"'));
     try {
       if (this.method === HttpMethod.GET) {
         return super.request(method);
@@ -273,7 +273,7 @@ class Twitter {
   async getTweetsByUsername(username: string) {
     const params = {
       screen_name: username,
-      count: 100,
+      count: 40,
       exclude_replies: true,
       include_rts: true,
       include_entities: true,

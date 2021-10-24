@@ -15,13 +15,17 @@ export default function Username() {
     query.username && `/api/twitter/users/${query.username}`
   );
 
-  const { data: tweets } = useSWR(
+  const { data: tweets, isValidating } = useSWR(
     user?.data.id && `/api/twitter/tweets/${query.username}`
   );
 
   const { next, previous } = useFollowers(router.query?.username);
-  useSWR(next?.username && `/api/twitter/tweets/${next?.username}`);
-  useSWR(previous?.username && `/api/twitter/tweets/${previous?.username}`);
+  useSWR(!!tweets && next?.username && `/api/twitter/tweets/${next?.username}`);
+  useSWR(
+    !!tweets &&
+      previous?.username &&
+      `/api/twitter/tweets/${previous?.username}`
+  );
 
   useEffect(() => {
     if (next?.avatar) {
