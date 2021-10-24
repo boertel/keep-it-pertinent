@@ -1,14 +1,7 @@
-import {
-  forwardRef,
-  useEffect,
-  useCallback,
-  useState,
-  useRef,
-  ReactNode,
-} from "react";
+import { useEffect, useCallback, useState, useRef, ReactNode } from "react";
 import { useRouter, NextRouter } from "next/router";
 import cn from "classnames";
-import { Dialog, Link, Dropdown } from "@/components";
+import { Dialog, Link, Dropdown, Button } from "@/components";
 import { useRegisterShortcut, useShortcutIsActive } from "@/hooks/useShortcut";
 import { useSWRConfig } from "swr";
 import { useLists } from "@/hooks";
@@ -344,22 +337,35 @@ function UnfollowConfirmationDialog({
   onConfirm: () => void;
 }) {
   const focusButton = useRef<HTMLButtonElement>();
+  const didConfirm = useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [checkbox, setCheckbox] = useState<boolean>(false);
 
   const handleOnConfirm = useCallback(() => {
+    didConfirm.current = true;
     setIsLoading(true);
     sessionStorage.setItem(
       "showConfirmations",
       JSON.stringify({ unfollow: !checkbox })
     );
     onClose();
-    onConfirm();
     setIsLoading(false);
-  }, [onConfirm, onClose, setIsLoading, checkbox]);
+  }, [onClose, setIsLoading, checkbox]);
+
+  const confirmAfterTransition = useCallback(() => {
+    // so next username doesn't flash in the modal after confirming the un-follow
+    if (didConfirm.current) {
+      onConfirm();
+    }
+  }, [onConfirm]);
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} initialFocus={focusButton}>
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      initialFocus={focusButton}
+      afterLeave={confirmAfterTransition}
+    >
       <>
         <Dialog.Title>Danger!</Dialog.Title>
         <Dialog.Content>
@@ -444,52 +450,3 @@ function NotShortcut({
     </span>
   );
 }
-
-const Button = forwardRef(function FooterButton(
-  {
-    className,
-    children,
-    shortcut,
-    as: AsComponent = "button",
-    onClick,
-    href,
-    isLoading,
-    ...props
-  }: {
-    className?: string;
-    shortcut?: string;
-    children: ReactNode;
-    onClick?: (evt: any) => void;
-    href?: string;
-    isLoading?: boolean;
-    as?: any;
-  },
-  ref
-) {
-  const router = useRouter();
-  const onShortcut = useCallback(
-    (evt: any) => {
-      if (href) {
-        return router.push(href);
-      } else if (onClick) {
-        onClick(evt);
-      }
-    },
-    [href, onClick, router]
-  );
-  useRegisterShortcut(shortcut, onShortcut, [onShortcut]);
-  return (
-    <AsComponent
-      ref={ref}
-      className={cn(
-        "border-2 px-6 py-2 rounded-md focus:outline-none focus:ring-opacity-30 focus:ring-4",
-        className
-      )}
-      onClick={onClick}
-      href={href}
-      {...props}
-    >
-      {isLoading ? <>Saving...</> : children}
-    </AsComponent>
-  );
-});

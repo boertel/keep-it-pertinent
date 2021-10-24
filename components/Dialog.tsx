@@ -6,11 +6,13 @@ function Dialog({
   onClose,
   children,
   initialFocus,
+  afterLeave,
 }: {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
   initialFocus?: any;
+  afterLeave?: () => void;
 }) {
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -29,6 +31,7 @@ function Dialog({
             leave="ease-in duration-200"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
+            afterLeave={afterLeave}
           >
             <HeadlessDialog.Overlay className="fixed inset-0 bg-black opacity-80" />
           </Transition.Child>
