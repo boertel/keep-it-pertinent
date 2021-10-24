@@ -93,7 +93,7 @@ export default function Footer({ userId }: { userId: string }) {
         "border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20 opacity-100 transition-opacity px-2"
       )}
     >
-      <h3 className="mb-4 text-center font-bold text-lg">
+      <h3 className="mb-2 text-center font-bold text-lg">
         Are these tweets still pertinent to you?
         <Favorite
           username={username}
