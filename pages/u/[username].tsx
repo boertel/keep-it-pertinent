@@ -43,7 +43,7 @@ export default function Username() {
 
   return (
     <>
-      <div className="max-w-prose mx-auto w-full">
+      <div className="max-w-prose mx-auto w-full relative">
         <>
           {!!user && (
             <NextSeo
@@ -67,7 +67,10 @@ export default function Username() {
         <Tweets tweets={tweets?.data} />
         {!!user && (
           <div className="text-center mb-12">
-            <em>and {user?.tweetsCount} more tweets… </em>
+            <em>
+              and {new Intl.NumberFormat().format(user?.tweetsCount)} more
+              tweets…
+            </em>
           </div>
         )}
       </div>

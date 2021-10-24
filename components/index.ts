@@ -8,6 +8,7 @@ export { default as Dropdown } from "./Dropdown";
 export { default as Favicon } from "./Favicon";
 export { default as Footer } from "./Footer";
 export { default as Link } from "./Link";
+export { default as Keyboard } from "./Keyboard";
 export { default as Logo } from "./Logo";
 export { default as Suggestions } from "./Suggestions";
 export { default as Title } from "./Title";

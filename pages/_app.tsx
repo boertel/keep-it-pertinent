@@ -1,6 +1,5 @@
 import "../styles/global.css";
 import { NextSeo } from "next-seo";
-import cn from "classnames";
 import { SWRConfig } from "swr";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -8,7 +7,7 @@ import type { AppProps } from "next/app";
 import { ShortcutProvider, useShortcutIsActive } from "@/hooks/useShortcut";
 import { ScrollRestorationProvider } from "@/hooks/useScrollRestoration";
 import { FollowersProvider } from "../components/Followers";
-import { Favicon, Logo } from "@/components";
+import { Keyboard, Favicon, Logo } from "@/components";
 import { ListsProvider } from "../hooks/useLists";
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -57,22 +56,15 @@ function LogoOnEscape() {
   const isActive = useShortcutIsActive("Escape");
   return (
     <div className="text-6xl flex flex-col justify-center items-center">
-      <div>
+      <div className="mb-2">
         <Logo
           className="filter grayscale hover:grayscale-0"
           style={{ transition: "filter .2s ease-in-out" }}
         />
       </div>
-      <kbd
-        className={cn(
-          "mt-2 text-xs font-thin transition-opacity opacity-0 py-1 px-2 border rounded-md border-gray-700",
-          {
-            "opacity-100": isActive,
-          }
-        )}
-      >
+      <Keyboard className={isActive ? "opacity-100" : "opacity-0"}>
         esc
-      </kbd>
+      </Keyboard>
     </div>
   );
 }

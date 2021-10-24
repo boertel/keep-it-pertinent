@@ -83,56 +83,58 @@ export default function Footer({ userId }: { userId: string }) {
   return (
     <footer
       className={cn(
-        "border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20 opacity-100 transition-opacity px-2"
+        "border-t border-gray-700 sticky bottom-0 bg-black pb-4 flex flex-col items-center space-y-2 z-20 opacity-100 transition-opacity px-2"
       )}
     >
-      <h3 className="mb-2 text-center font-bold text-lg">
-        Are these tweets still pertinent to you?
-        <Favorite
-          username={username}
-          userId={userId}
-          isFavorite={username ? favorites[username] : false}
-          favoriteListId={favoriteListId}
-        />
-      </h3>
-      <div className="grid gap-y-4 gap-x-4 grid-rows-2 sm:grid-rows-none sm:grid-flow-col-dense">
-        {previous && (
+      <div className="max-w-prose relative">
+        <h3 className="mt-2 mb-4 text-center font-bold text-lg">
+          <Favorite
+            username={username}
+            userId={userId}
+            isFavorite={username ? favorites[username] : false}
+            favoriteListId={favoriteListId}
+          />
+          Are these tweets still pertinent to you?
+        </h3>
+        <div className="grid gap-y-4 gap-x-4 grid-rows-2 sm:grid-rows-none sm:grid-flow-col-dense">
+          {previous && (
+            <Button
+              as={Link}
+              href={`/u/${previous.username}`}
+              className="pr-10 pl-4 border-none text-blue-400 hover:underline text-smll"
+              shortcut="shift+B"
+            >
+              <CommandKey shortcut="shift+B" />B
+              <NotShortcut shortcut="shift+B">ack </NotShortcut>
+            </Button>
+          )}
           <Button
-            as={Link}
-            href={`/u/${previous.username}`}
-            className="pr-12 border-none text-blue-400 hover:underline"
-            shortcut="shift+B"
+            className="pr-10 pl-4 border-red-400 hover:bg-red-400 hover:bg-opacity-30 focus:ring-red-400"
+            shortcut="shift+U"
+            onClick={confirmUnfollow}
           >
-            <CommandKey shortcut="shift+B" />B
-            <NotShortcut shortcut="shift+B">ack </NotShortcut>
+            <CommandKey shortcut="shift+U" /> U
+            <NotShortcut shortcut="shift+U">n-follow</NotShortcut>
           </Button>
-        )}
-        <Button
-          className="pr-12 border-red-400 hover:bg-red-400 hover:bg-opacity-30 focus:ring-red-400"
-          shortcut="shift+U"
-          onClick={confirmUnfollow}
-        >
-          <CommandKey shortcut="shift+U" /> U
-          <NotShortcut shortcut="shift+U">n-follow</NotShortcut>
-        </Button>
-        <UnfollowConfirmationDialog
-          username={username}
-          isOpen={isUnfollowConfirmationOpen}
-          onClose={closeUnfollowConfirmation}
-          onConfirm={unfollow}
-        />
-        <ListDropdown username={username} />
-        {next && (
-          <Button
-            className="pr-12 border-green-400 hover:bg-green-400 hover:bg-opacity-30"
-            shortcut="shift+N"
-            as={Link}
-            href={`/u/${next.username}`}
-          >
-            <CommandKey shortcut="shift+N" />N
-            <NotShortcut shortcut="shift+N">ext</NotShortcut>
-          </Button>
-        )}
+          <UnfollowConfirmationDialog
+            username={username}
+            isOpen={isUnfollowConfirmationOpen}
+            onClose={closeUnfollowConfirmation}
+            onConfirm={unfollow}
+          />
+          <ListDropdown username={username} />
+          {next && (
+            <Button
+              className="pr-10 pl-4 border-green-400 hover:bg-green-400 hover:bg-opacity-30"
+              shortcut="shift+N"
+              as={Link}
+              href={`/u/${next.username}`}
+            >
+              <CommandKey shortcut="shift+N" />N
+              <NotShortcut shortcut="shift+N">ext</NotShortcut>
+            </Button>
+          )}
+        </div>
       </div>
     </footer>
   );
