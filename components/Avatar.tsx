@@ -38,6 +38,8 @@ export default function Avatar({
     observer.current = new IntersectionObserver(callback);
     if (ref.current) {
       observer.current.observe(ref.current);
+      ref.current.classList.add("bg-gray-700");
+      ref.current.src = "";
     }
   }, [callback]);
 
