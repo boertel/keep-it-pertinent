@@ -164,7 +164,7 @@ export default class TwitterQuery extends Query {
   request() {
     const fetcher = TwitterQuery.fetcher;
     const method = fetcher[this.method.toLowerCase()];
-    console.log("calling", this.getCacheKey().replaceAll('"', '\\"'));
+    console.log("calling", this.getCacheKey().replace(/"/g, '\\"'));
     try {
       if (this.method === HttpMethod.GET) {
         return super.request(method);
@@ -265,7 +265,7 @@ class Twitter {
       };
     }
     const query = new TwitterQuery(HttpMethod.GET, "/users/lookup", params);
-    const { data, response } = await query.request();
+    const { data } = await query.request();
     const user = data[0];
     return parseUser(user);
   }
