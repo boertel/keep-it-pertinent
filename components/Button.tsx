@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useRegisterShortcut } from "@/hooks/useShortcut";
 
 const Button = forwardRef(function _Button(
-  { shortcut, ...rest }: { shortcut?: string },
+  { shortcut, ...rest }: { shortcut?: string; [x: string]: any },
   ref
 ) {
   if (shortcut) {
