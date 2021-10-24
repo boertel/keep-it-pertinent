@@ -4,6 +4,7 @@ import { SWRConfig } from "swr";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import type { AppProps } from "next/app";
+import { useEffect } from "react";
 import { ShortcutProvider, useShortcutIsActive } from "@/hooks/useShortcut";
 import { ScrollRestorationProvider } from "@/hooks/useScrollRestoration";
 import { FollowersProvider } from "../components/Followers";
@@ -27,6 +28,7 @@ export default function App({ Component, pageProps }: AppProps) {
       }}
     >
       <Favicon />
+      <Version />
       <NextSeo title="Keep it pertinent" />
       <FollowersProvider>
         <ListsProvider>
@@ -67,4 +69,13 @@ function LogoOnEscape() {
       </Keyboard>
     </div>
   );
+}
+
+function Version() {
+  useEffect(() => {
+    console.log(
+      `${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA} (${process.env.NEXT_PUBLIC_VERCEL_ENV})`
+    );
+  }, []);
+  return null;
 }
