@@ -1,30 +1,6 @@
-// eslint-disable @next/next/no-img-element
+/* eslint-disable @next/next/no-img-element */
 import cn from "classnames";
-import { useEffect, useState, useRef, useCallback } from "react";
-
-interface Window {
-  Image: {
-    prototype: HTMLImageElement;
-    new (): HTMLImageElement;
-  };
-}
-
-function useImageOnLoad(src?: string): boolean {
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const img = useRef<HTMLImageElement | null>(null);
-
-  useEffect(() => {
-    img.current = new window.Image();
-    if (img.current && src) {
-      img.current.onload = () => {
-        setIsLoaded(true);
-      };
-      img.current.src = src;
-    }
-  }, [src]);
-
-  return isLoaded;
-}
+import { useEffect, useRef, useCallback } from "react";
 
 export default function Avatar({
   src,
@@ -35,9 +11,7 @@ export default function Avatar({
   alt: string;
   className?: string;
 }) {
-  //const isLoaded = useImageOnLoad(src);
-
-  const ref = useRef<HTMLImageElement>();
+  const ref = useRef<HTMLImageElement>(null);
 
   const callback = useCallback(
     (entries) => {
@@ -50,7 +24,7 @@ export default function Avatar({
         };
         img.src = src;
 
-        if (ref.current) {
+        if (ref.current && observer.current) {
           observer.current.unobserve(ref.current);
         }
       }
@@ -58,16 +32,14 @@ export default function Avatar({
     [src]
   );
 
-  const observer = useRef<IntersectionObserver>(
-    new IntersectionObserver(callback)
-  );
+  const observer = useRef<IntersectionObserver>();
 
-  const image = useCallback((node: HTMLImageElement) => {
-    if (node) {
-      observer.current.observe(node);
-      ref.current = node;
+  useEffect(() => {
+    observer.current = new IntersectionObserver(callback);
+    if (ref.current) {
+      observer.current.observe(ref.current);
     }
-  }, []);
+  }, [callback]);
 
   return (
     <div
@@ -78,7 +50,7 @@ export default function Avatar({
     >
       <img
         alt={alt}
-        ref={image}
+        ref={ref}
         style={{ fontSize: "0px" }}
         className={cn(
           "rounded-full border-4 border-black transition-colors min-w-full min-h-full bg-gray-700"

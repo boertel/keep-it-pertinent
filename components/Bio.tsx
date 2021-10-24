@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ReactNode } from "react";
 import cn from "classnames";
 
 import Avatar from "./Avatar";
@@ -9,19 +10,19 @@ interface ExpendableUrl {
 }
 
 interface BioProps {
-  name: string;
-  username: string;
-  description: string;
+  name?: string | ReactNode;
+  username?: string | ReactNode;
+  description?: string | ReactNode;
   avatar: string;
   urls?: any;
   className?: string;
 }
 
 export default function Bio({
-  name,
-  username,
+  name = <>&nbsp;</>,
+  username = "",
+  description = <>&nbsp;</>,
   urls = [],
-  description,
   avatar,
   className,
 }: BioProps) {
@@ -44,7 +45,7 @@ export default function Bio({
             <h1 className="text-xxl font-bold">{name}</h1>
             <Link href={`https://twitter.com/${username}`}>
               <a className="text-gray-500" target="_blank">
-                <h3>@{username}</h3>
+                <h3>{!!username && `@${username}`}</h3>
               </a>
             </Link>
           </div>

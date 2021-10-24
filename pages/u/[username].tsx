@@ -11,12 +11,12 @@ export default function Username() {
   const router = useRouter();
   const { query } = router;
 
-  const { data: user } = useSWR(
+  const { data: user = {} } = useSWR(
     query.username && `/api/twitter/users/${query.username}`
   );
 
-  const { data: tweets, isValidating } = useSWR(
-    user?.data.id && `/api/twitter/tweets/${query.username}`
+  const { data: tweets } = useSWR(
+    query.username && `/api/twitter/tweets/${query.username}`
   );
 
   const { next, previous } = useFollowers(router.query?.username);
@@ -44,34 +44,34 @@ export default function Username() {
   return (
     <>
       <div className="max-w-prose mx-auto w-full">
-        {user && (
-          <>
+        <>
+          {!!user && (
             <NextSeo
-              title={`${user.data.name} (${user.data.username}) | Keep it pertinent`}
+              title={`${user.name} (${user.username}) | Keep it pertinent`}
             />
-            <Bio
-              name={user.data.name}
-              username={user.data.username}
-              description={user.data.description}
-              avatar={user.data.avatar}
-              urls={user.data.urls}
-              className="px-4 sm:px-0"
-            />
-          </>
-        )}
+          )}
+          <Bio
+            name={user.name}
+            username={user.username}
+            description={user.description}
+            avatar={user.avatar}
+            urls={user.urls}
+            className="px-4 sm:px-0"
+          />
+        </>
         {tweets?.data && (
           <div className="mt-10 border-b border-gray-700">
             <Suggestions className="mt-10 mx-4 sm:mx-0" tweets={tweets.data} />
           </div>
         )}
         <Tweets tweets={tweets?.data} />
-        {user?.data?.public_metrics && (
+        {!!user && (
           <div className="text-center mb-12">
-            <em>and {user.data.public_metrics.tweet_count} more tweets… </em>
+            <em>and {user?.tweetsCount} more tweets… </em>
           </div>
         )}
       </div>
-      <Footer userId={user?.data.id} />
+      <Footer userId={user?.id} />
     </>
   );
 }

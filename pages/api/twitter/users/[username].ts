@@ -7,7 +7,7 @@ export default async function user(req: NextApiRequest, res: NextApiResponse) {
     const t = await createTwitterFromReq(req);
 
     const data = await t.getUserByUsername(req.query.username);
-    return res.status(200).json({ data });
+    return res.status(200).json(data);
   } catch (exception: any) {
     console.error(exception);
     return res
