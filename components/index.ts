@@ -12,3 +12,4 @@ export { default as Tweet } from "./Tweet";
 export { default as Tweets } from "./Tweets";
 export { default as Dialog } from "./Dialog";
 export { default as Title } from "./Title";
+export { default as TwitterLogo } from "./TwitterLogo";

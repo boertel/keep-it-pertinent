@@ -10,7 +10,7 @@ import { useRouter, NextRouter } from "next/router";
 import cn from "classnames";
 import { Dialog, Link, Dropdown } from "@/components";
 import { useRegisterShortcut, useShortcutIsActive } from "@/hooks/useShortcut";
-import useSWR, { useSWRConfig } from "swr";
+import { useSWRConfig } from "swr";
 import { useLists } from "@/hooks";
 
 import { useFollowers } from "./Followers";
@@ -90,7 +90,7 @@ export default function Footer({ userId }: { userId: string }) {
   return (
     <footer
       className={cn(
-        "border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20 opacity-100 transition-opacity"
+        "border-t border-gray-700 sticky bottom-0 bg-black pt-2 pb-4 flex flex-col items-center space-y-2 z-20 opacity-100 transition-opacity px-2"
       )}
     >
       <h3 className="mb-4 text-center font-bold text-lg">
@@ -102,7 +102,7 @@ export default function Footer({ userId }: { userId: string }) {
           favoriteListId={favoriteListId}
         />
       </h3>
-      <div className="flex items-center justify-center space-x-3 flex-wrap">
+      <div className="grid gap-y-4 gap-x-4 grid-rows-2 sm:grid-rows-none sm:grid-flow-col-dense">
         {previous && (
           <Button
             as={Link}
