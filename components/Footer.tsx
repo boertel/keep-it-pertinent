@@ -271,8 +271,8 @@ function ListDropdown({ username }: { username?: string | string[] }) {
             <>
               <div
                 className={cn(
-                  "absolute inset-0 flex items-center justify-center text-yellow-400 pointer-events-none opacity-0",
-                  { "opacity-100": !!moved }
+                  "absolute inset-0 flex items-center justify-center text-yellow-400 pointer-events-none",
+                  { "opacity-100": !!moved, "opacity-0": !moved }
                 )}
               >
                 Moved!
@@ -444,7 +444,8 @@ function NotShortcut({
   const isActive = useShortcutIsActive(shortcut);
   return (
     <span
-      className={cn(className, "transition-opacity opacity-100", {
+      className={cn(className, "transition-opacity", {
+        "opacity-100": !isActive,
         "opacity-20": isActive,
       })}
       {...props}
