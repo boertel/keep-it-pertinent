@@ -418,7 +418,8 @@ function Shortcut({
   const isActive = useShortcutIsActive(shortcut);
   return (
     <span
-      className={cn(className, "transition-opacity opacity-0", {
+      className={cn(className, "transition-opacity", {
+        "opacity-0": !isActive,
         "opacity-100": isActive,
       })}
       {...props}
