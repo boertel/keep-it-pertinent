@@ -63,14 +63,14 @@ export default function Home() {
               <a
                 ref={navIndex === index ? focus : null}
                 className={cn(
-                  "flex p-2 items-center space-x-4 no-underline rounded-md outline-none"
+                  "flex p-2 items-center space-x-4 no-underline rounded-md outline-none group"
                 )}
               >
                 <Avatar
                   src={avatar}
                   alt={`${username} avatar`}
                   className={cn(
-                    "focus:border-blue-600 hover:border-blue-600",
+                    "focus:border-blue-600 group-hover:border-blue-600",
                     navIndex === index ? "border-blue-600" : "border-gray-400"
                   )}
                 />

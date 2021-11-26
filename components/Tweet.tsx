@@ -5,6 +5,7 @@ import Avatar from "./Avatar";
 import Author from "./Author";
 import Datetime from "./Datetime";
 import Link from "./Link";
+import { Repeat as RepeatIcon } from "phosphor-react";
 
 interface AuthorType {
   id: number;
@@ -63,7 +64,13 @@ const Tweet = forwardRef(function MyTweet(
             name={author.name}
             username={author.username}
             className="items-center"
-          />
+          >
+            {isRetweet && (
+              <div className="mx-2 text-gray-500">
+                <RepeatIcon />
+              </div>
+            )}
+          </Author>
           {createdAt && (
             <Datetime
               className="text-sm text-gray-500"

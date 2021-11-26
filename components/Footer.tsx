@@ -21,6 +21,8 @@ export default function Footer({ userId }: { userId: string }) {
   const router: NextRouter = useRouter();
   const username = useCurrentUsername();
 
+  const [showButtons, setShowButtons] = useState<boolean>(false);
+
   const [isUnfollowConfirmationOpen, setIsUnfollowConfirmationOpen] =
     useState<boolean>(false);
   const closeUnfollowConfirmation = () => setIsUnfollowConfirmationOpen(false);
@@ -87,16 +89,23 @@ export default function Footer({ userId }: { userId: string }) {
       )}
     >
       <div className="max-w-prose relative">
-        <h3 className="mt-2 mb-4 text-center font-bold text-lg">
+        <h3 className="mt-2 text-center font-bold text-lg flex items-center">
           <Favorite
             username={username}
             userId={userId}
             isFavorite={username ? favorites[username] : false}
             favoriteListId={favoriteListId}
           />
-          Are these tweets still pertinent to you?
+          <div className="" onClick={() => setShowButtons((prev) => !prev)}>
+            Are these tweets still pertinent to you?
+          </div>
         </h3>
-        <div className="grid gap-y-4 gap-x-4 grid-rows-2 sm:grid-rows-none sm:grid-flow-col-dense">
+        <div
+          className={cn(
+            "mt-4 gap-y-4 gap-x-4 grid-rows-2 sm:grid-rows-none sm:grid-flow-col-dense",
+            showButtons ? "grid" : "hidden md:grid"
+          )}
+        >
           {previous && (
             <Button
               as={Link}
@@ -125,7 +134,7 @@ export default function Footer({ userId }: { userId: string }) {
           <ListDropdown username={username} />
           {next && (
             <Button
-              className="pr-10 pl-4 border-green-400 hover:bg-green-400 hover:bg-opacity-30"
+              className="pr-10 pl-4 border-green-400 hover:bg-green-400 hover:bg-opacity-30 text-center"
               shortcut="shift+N"
               as={Link}
               href={`/u/${next.username}`}

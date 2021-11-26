@@ -26,7 +26,7 @@ export default function Tweets({ tweets }: { tweets?: any[] }) {
               rel="noopener noreferer"
               className={cn(
                 "flex no-underline outline-none ring-offset-4 ring-offset-black border-b border-gray-700",
-                "hover:ring hover:ring-blue-600 hover:border-transparent hover:rounded-md focus:ring focus:ring-blue-600 focus:border-transparent focus:rounded-md"
+                "hover:ring hover:ring-blue-600 hover:border-transparent hover:rounded-md focus:ring focus:ring-blue-600 focus:border-transparent focus:rounded-md mx-2 md:,x-none"
               )}
             >
               <Tweet className={cn("w-full px-4 sm:px-0")} {...tweet} />

@@ -53,7 +53,7 @@ const Button = forwardRef(function DropdownButton(
       ref={ref}
       as={as}
       shortcut={shortcut}
-      className={className}
+      className={cn("w-full", className)}
       {...props}
     >
       {children}
