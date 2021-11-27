@@ -5,7 +5,13 @@ import Tweet from "./Tweet";
 import Link from "next/link";
 import { useJKNavigation } from "@/hooks";
 
-export default function Tweets({ tweets }: { tweets?: any[] }) {
+export default function Tweets({
+  tweets,
+  className,
+}: {
+  tweets?: any[];
+  className?: string;
+}) {
   const [navIndex, setNavIndex, focus] = useJKNavigation(tweets?.length);
 
   useEffect(() => {
@@ -13,7 +19,7 @@ export default function Tweets({ tweets }: { tweets?: any[] }) {
   }, [tweets, setNavIndex]);
 
   return (
-    <div className="max-w-prose mx-auto w-full">
+    <div className={cn("max-w-prose mx-auto w-full", className)}>
       <ul className="mb-20 min-h-screen">
         {tweets?.map((tweet: any, index: number) => (
           <Link

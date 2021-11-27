@@ -83,6 +83,9 @@ export default function Home() {
             </Link>
           </li>
         ))}
+        <div className="p-10 text-center italic text-gray-500">
+          Sorry, we are working on showing more than your last 200 followers!
+        </div>
       </ul>
     </div>
   );

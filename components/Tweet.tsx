@@ -66,7 +66,7 @@ const Tweet = forwardRef(function MyTweet(
             className="items-center"
           >
             {isRetweet && (
-              <div className="mx-2 text-gray-500">
+              <div className="mr-2 text-gray-500">
                 <RepeatIcon />
               </div>
             )}
